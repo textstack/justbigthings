@@ -56,8 +56,8 @@ local function biggerSizeLimit()
 	return true
 end
 
-timer.Create("pacNewSizeLimit", 1, 60, function()
+timer.Create("JBT_Pac3", 1, 60, function()
 	if biggerSizeLimit() then
-		timer.Remove("pacNewSizeLimit")
+		timer.Remove("JBT_Pac3")
 	end
 end)

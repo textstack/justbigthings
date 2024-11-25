@@ -1,5 +1,6 @@
 local enable = CreateConVar("jbt_sitanywhere_bigtrace_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the sit anywhere module", 0, 1)
 local adminOnly = CreateConVar("jbt_sitanywhere_bigtrace_adminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether sitanywhere trace scaling should only be for admins", 0, 1)
+local distance = CreateConVar("jbt_sitanywhere_bigtrace_distance", "100", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "What the base distance check should be for sitting", 0, 9999)
 
 local function bigTrace()
 	if not SitAnywhere then return end
@@ -26,10 +27,10 @@ local function bigTrace()
 		end
 
 		if not EyeTrace.Hit then return false end
-		if EyeTrace.HitPos:Distance(EyeTrace.StartPos) > 100 * scale then return false end
+		if EyeTrace.HitPos:Distance(EyeTrace.StartPos) > distance:GetFloat() * scale then return false end
 
 		local t = hook.Run("CheckValidSit", ply, EyeTrace)
-		if t ~= nil then return t end
+		if t == false or t == true then return t end
 
 		if not EyeTrace.HitWorld then
 			if SitOnEntsMode:GetInt() == 0 then return false end
@@ -61,8 +62,8 @@ local function bigTrace()
 	return true
 end
 
-timer.Create("sitAnywhereBigTrace", 1, 60, function()
+timer.Create("JBT_SitAnywhere", 1, 60, function()
 	if bigTrace() then
-		timer.Remove("sitAnywhereBigTrace")
+		timer.Remove("JBT_SitAnywhere")
 	end
 end)
