@@ -36,6 +36,11 @@ local function biggerSizeLimit()
 			return
 		end
 
+		if not adminOnly:GetBool() then
+			self:OldMutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
+			return
+		end
+
 		-- the linter is wrong
 		local ply = self.Owner
 		if not ply:IsPlayer() then
@@ -45,18 +50,13 @@ local function biggerSizeLimit()
 
 		if JBT.HasPermission(ply, "jbt_pac_sizelimit") then
 			self:OldMutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
-			return
-		end
-
-		if not adminOnly:GetBool() then
-			self:OldMutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
 		end
 	end
 
 	return true
 end
 
-timer.Create("pacNewSizeLimit", 1, 0, function()
+timer.Create("pacNewSizeLimit", 1, 60, function()
 	if biggerSizeLimit() then
 		timer.Remove("pacNewSizeLimit")
 	end

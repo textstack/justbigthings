@@ -171,7 +171,7 @@ hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
 	local scale = JBT.PlyScale(ply)
 	if scale < 1.01 then return end
 
-	timer.Create("JBT_pickup_" .. ply:UserID(), 0.1, 1, function()
+	timer.Create("JBT_Pickup_" .. ply:UserID(), 0.1, 1, function()
 		if not IsValid(ply) or not IsValid(ent) then return end
 		if ply.JBT_LastPickedUp then return end
 		if ent:IsPlayerHolding() then return end
@@ -179,7 +179,7 @@ hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
 
 		local entVec = ent:OBBMaxs() - ent:OBBMins()
 		local plyVec = ply:OBBMaxs() - ply:OBBMins()
-		local plyLinearSize = (plyVec.x + plyVec.y + plyVec.z) * (ply:Crouching() and 2 or 1) -- the hitbox is smaller while crouching
+		local plyLinearSize = plyVec.x + plyVec.y + plyVec.z * (ply:Crouching() and 2 or 1) -- the hitbox is smaller while crouching
 		if entVec.x + entVec.y + entVec.z > plyLinearSize then return end
 
 		local phys = ent:GetPhysicsObject()
@@ -202,7 +202,7 @@ hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
 		phys:SetMass(ent.JBT_OldMass) -- won't work if the pickup succeeds
 
 		ply.JBT_LastPickedUp = true
-		timer.Create("JBT_drop_" .. ply:UserID(), 1, 1, function()
+		timer.Create("JBT_Drop_" .. ply:UserID(), 1, 1, function()
 			if IsValid(ply) then
 				ply.JBT_LastPickedUp = nil
 			end
@@ -213,7 +213,7 @@ end)
 -- this hook does not have enabled/adminonly checks to ensure that stuff doesn't break with live updates
 hook.Add("OnPlayerPhysicsDrop", "JBT_BigUse", function(ply, ent)
 	ply.JBT_LastPickedUp = true
-	timer.Create("JBT_drop_" .. ply:UserID(), 1, 1, function()
+	timer.Create("JBT_Drop_" .. ply:UserID(), 1, 1, function()
 		if IsValid(ply) then
 			ply.JBT_LastPickedUp = nil
 		end

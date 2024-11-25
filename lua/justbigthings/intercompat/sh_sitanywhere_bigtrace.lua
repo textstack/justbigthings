@@ -61,7 +61,7 @@ local function bigTrace()
 	return true
 end
 
-timer.Create("sitAnywhereBigTrace", 1, 0, function()
+timer.Create("sitAnywhereBigTrace", 1, 60, function()
 	if bigTrace() then
 		timer.Remove("sitAnywhereBigTrace")
 	end
