@@ -13,7 +13,7 @@ Garry's Mod addon that adds some tweaks related to big players
 - `jbt_pac_sizelimit_min` How much the pac size min is modified (defalt 0.01) (pac3 default 0.1)
 - `jbt_sitanywhere_bigtrace_enabled` Whether to enable the sit anywhere module (default 1)
 - `jbt_sitanywhere_bigtrace_adminonly` Whether sitanywhere trace scaling should only be for admins (default 0)
-- `jbt_adminonly_is_superadminonly` Whether 'adminonly' settings should actually be superadmin only
+- `jbt_adminonly_is_superadminonly` Whether 'adminonly' settings should actually be superadmin only (default 0)
 
 ### Permissions (SAM exclusive)
 - `jbt_pac_sizelimit` Override the adminonly setting of the pac size limit module
