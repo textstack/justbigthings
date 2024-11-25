@@ -1,4 +1,4 @@
-local superadmin = CreateConVar("jbt_adminonly_is_superadminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether 'adminonly' setting should actually be superadmin only", 0, 1)
+local superadmin = CreateConVar("jbt_adminonly_is_superadminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether 'adminonly' settings should actually be superadmin only", 0, 1)
 
 local defaultHeight = 72
 local defaultCrouchingHeight = 36
@@ -20,8 +20,10 @@ function JBT.HasPermission(ply, permission)
 		return true
 	end
 
-	if superadmin:GetBool() and ply:IsSuperAdmin() or ply:IsAdmin() then
-		return true
+	if superadmin:GetBool() then
+		if ply:IsSuperAdmin() then return true end
+	else
+		if ply:IsAdmin() then return true end
 	end
 
 	return false
