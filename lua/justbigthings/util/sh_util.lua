@@ -28,3 +28,29 @@ function JBT.HasPermission(ply, permission)
 
 	return false
 end
+
+-- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseplayer_shared.cpp#L1051-L1066
+function JBT.IntervalDistance(x, x0, x1)
+	if x0 > x1 then
+		x0, x1 = x1, x0
+	end
+
+	if x < x0 then return x0 - x end
+	if x > x1 then return x - x1 end
+	return 0
+end
+
+-- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/collisionproperty.cpp#L917-L924
+function JBT.GetNearestPoint(ent, point)
+	local phys = ent:GetPhysicsObject()
+	if not IsValid(phys) then return ent:GetPos() end
+
+	local newPoint = ent:WorldToLocal(point)
+
+	local mins, maxs = ent:OBBMins(), ent:OBBMaxs()
+	newPoint.x = math.Clamp(newPoint.x, mins.x, maxs.x)
+	newPoint.y = math.Clamp(newPoint.y, mins.y, maxs.y)
+	newPoint.z = math.Clamp(newPoint.z, mins.z, maxs.z)
+
+	return ent:LocalToWorld(newPoint)
+end

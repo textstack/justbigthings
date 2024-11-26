@@ -1,15 +1,16 @@
-local enable = CreateConVar("jbt_pac_sizelimit_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the pac size limit module", 0, 1)
-local adminOnly = CreateConVar("jbt_pac_sizelimit_adminonly", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether the modified size limit is for admins only", 0, 1)
-local amount = CreateConVar("jbt_pac_sizelimit_max", "100", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "How much the pac size max is modified", 0.01, 1000)
-local amountMin = CreateConVar("jbt_pac_sizelimit_min", "0.01", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "How much the pac size min is modified", 0.01, 1000)
-
 local function biggerSizeLimit()
 	if not pac or not pac.emut or not pac.emut.registered_mutators or not pac.emut.registered_mutators.size then
 		return
 	end
 
+	local enable = CreateConVar("jbt_pac_sizelimit_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the pac size limit module", 0, 1)
+	local adminOnly = CreateConVar("jbt_pac_sizelimit_adminonly", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether the modified size limit is for admins only", 0, 1)
+	local amount = CreateConVar("jbt_pac_sizelimit_max", "100", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "How much the pac size max is modified", 0.01, 1000)
+	local amountMin = CreateConVar("jbt_pac_sizelimit_min", "0.01", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "How much the pac size min is modified", 0.01, 1000)
+
 	local size = pac.emut.registered_mutators.size
 
+	size.OldReadArguments = size.OldReadArguments or size.ReadArguments
 	function size:ReadArguments()
 		local multiplier = math.Clamp(net.ReadFloat(), 0.01, math.max(10, amount:GetFloat()))
 		local other = false
