@@ -1,9 +1,9 @@
+local enable = CreateConVar("jbt_sitanywhere_bigtrace_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the sit anywhere module", 0, 1)
+local adminOnly = CreateConVar("jbt_sitanywhere_bigtrace_adminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether sitanywhere trace scaling should only be for admins", 0, 1)
+local distance = CreateConVar("jbt_sitanywhere_bigtrace_distance", "100", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "What the base distance check should be for sitting", 0, 9999)
+
 local function bigTrace()
 	if not SitAnywhere then return end
-
-	local enable = CreateConVar("jbt_sitanywhere_bigtrace_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the sit anywhere module", 0, 1)
-	local adminOnly = CreateConVar("jbt_sitanywhere_bigtrace_adminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether sitanywhere trace scaling should only be for admins", 0, 1)
-	local distance = CreateConVar("jbt_sitanywhere_bigtrace_distance", "100", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "What the base distance check should be for sitting", 0, 9999)
 
 	local EMETA = FindMetaTable("Entity")
 	local blacklist = SitAnywhere.ClassBlacklist
