@@ -10,6 +10,7 @@ local function biggerSizeLimit()
 
 	local size = pac.emut.registered_mutators.size
 
+	size.OldReadArguments = size.OldReadArguments or size.ReadArguments
 	function size:ReadArguments()
 		local multiplier = math.Clamp(net.ReadFloat(), 0.01, math.max(10, amount:GetFloat()))
 		local other = false

@@ -11,7 +11,6 @@ local function bigTrace()
 	local SitOnEntsMode = GetConVar("sitting_ent_mode")
 
 	SitAnywhere.OldValidSitTrace = SitAnywhere.OldValidSitTrace or SitAnywhere.ValidSitTrace
-
 	function SitAnywhere.ValidSitTrace(ply, EyeTrace)
 		if not enable:GetBool() then
 			return SitAnywhere.OldValidSitTrace(ply, EyeTrace)
