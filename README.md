@@ -15,6 +15,7 @@ Garry's Mod addon that adds some tweaks related to big players
 - `jbt_sitanywhere_bigtrace_adminonly` Whether sitanywhere trace scaling should only be for admins (default 0)
 - `jbg_sitanywhere_bigtrace_distance` What the base distance check should be for sitting (default 100)
 - `jbt_adminonly_is_superadminonly` Whether 'adminonly' settings should actually be superadmin only (default 0)
+- `jbt_cl_bigsit` Whether player size should affect the camera view while sitting (default 1)
 
 ### Permissions (SAM exclusive)
 - `jbt_pac_sizelimit` Override the adminonly setting of the pac size limit module
