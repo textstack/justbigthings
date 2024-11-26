@@ -6,7 +6,7 @@ Garry's Mod addon that adds some tweaks related to big players
 - `jbt_biguse_enabled` Whether to enable the big use module (default 1)
 - `jbt_biguse_adminonly` Whether big usage is for admins only (default 0)
 - `jbt_biguse_mass_enabled` Whether big players can carry heavier props (default 1)
-- `jbt_biguse_mass_pow` The power of the amount of mass big players can carry (default 2)
+- `jbt_biguse_mass_pow` The mathematical power of the amount of mass big players can carry (default 2)
 - `jbt_pac_sizelimit_enabled` Whether to enable the pac size limit module (default 1)
 - `jbt_pac_sizelimit_adminonly` Whether the modified size limit is for admins only (default 1)
 - `jbt_pac_sizelimit_max` How much the pac size max is modified (default 100) (pac3 default 10)
@@ -16,6 +16,10 @@ Garry's Mod addon that adds some tweaks related to big players
 - `jbt_sitanywhere_bigtrace_distance` What the base distance check should be for sitting (default 100)
 - `jbt_adminonly_is_superadminonly` Whether 'adminonly' settings should actually be superadmin only (default 0)
 - `jbt_cl_bigsit` Whether player size should affect the camera view while sitting (default 1)
+
+### Disabled Convars (due to the module being too unstable)
+- `jbt_bigmass_enabled` Whether to enable the big mass module (default 0)
+- `jbt_bigmass_pow` The mathematical power for how player mass scales with size (default 2)
 
 ### Permissions (SAM exclusive)
 - `jbt_pac_sizelimit` Override the adminonly setting of the pac size limit module

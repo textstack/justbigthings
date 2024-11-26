@@ -1,7 +1,7 @@
 local enable = CreateConVar("jbt_biguse_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big use module", 0, 1)
 local adminOnly = CreateConVar("jbt_biguse_adminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big usage is for admins only", 0, 1)
 local enableMass = CreateConVar("jbt_biguse_mass_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big players can carry heavier props", 0, 1)
-local powerMass = CreateConVar("jbt_biguse_mass_pow", "2", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "The power of the amount of mass big players can carry", 1, 3)
+local powerMass = CreateConVar("jbt_biguse_mass_pow", "2", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "The mathematical power of the amount of mass big players can carry", 1, 3)
 
 local usableEnums = 0x00000010 + 0x00000020 + 0x00000040 + 0x00000080
 local maxMass = 35
@@ -15,7 +15,7 @@ local useDrop = 72
 local usableContents = MASK_SOLID + CONTENTS_DEBRIS + CONTENTS_PLAYERCLIP
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/master/sp/src/game/server/player.cpp#L2766-L2780
-local function isUsable(ent, required, scale)
+function JBT.IsUsable(ent, required, scale)
 	if not IsValid(ent) then return false end
 	if ent:IsPlayer() then return false end
 
@@ -30,32 +30,6 @@ local function isUsable(ent, required, scale)
 	if not IsValid(phys) or not phys:IsMoveable() then return false end
 
 	return phys:GetMass() <= maxMass * scale ^ powerMass:GetInt() -- any physical thing with the right size can be moved
-end
-
--- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseplayer_shared.cpp#L1051-L1066
-local function intervalDistance(x, x0, x1)
-	if x0 > x1 then
-		x0, x1 = x1, x0
-	end
-
-	if x < x0 then return x0 - x end
-	if x > x1 then return x - x1 end
-	return 0
-end
-
--- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/collisionproperty.cpp#L917-L924
-local function getNearestPoint(ent, point)
-	local phys = ent:GetPhysicsObject()
-	if not IsValid(phys) then return ent:GetPos() end
-
-	local newPoint = ent:WorldToLocal(point)
-
-	local mins, maxs = ent:OBBMins(), ent:OBBMaxs()
-	newPoint.x = math.Clamp(newPoint.x, mins.x, maxs.x)
-	newPoint.y = math.Clamp(newPoint.y, mins.y, maxs.y)
-	newPoint.z = math.Clamp(newPoint.z, mins.z, maxs.z)
-
-	return ent:LocalToWorld(newPoint)
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseplayer_shared.cpp#L1068-L1270
@@ -98,18 +72,18 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 		end
 
 		local object = tr.Entity
-		local usable = isUsable(object, 0, scale)
+		local usable = JBT.IsUsable(object, 0, scale)
 
 		while IsValid(object) and not usable and IsValid(object:GetParent()) do
 			object = object:GetParent()
-			usable = isUsable(object, 0, scale)
+			usable = JBT.IsUsable(object, 0, scale)
 		end
 
 		if not usable then continue end
 
 		local delta = tr.HitPos - tr.StartPos
 		local centerZ = object:WorldSpaceCenter().z
-		delta.z = intervalDistance(tr.HitPos.z, centerZ + ply:OBBMins().z, centerZ + ply:OBBMaxs().z)
+		delta.z = JBT.IntervalDistance(tr.HitPos.z, centerZ + ply:OBBMins().z, centerZ + ply:OBBMaxs().z)
 		local dist = delta:Length()
 
 		if dist >= useRadius * scale then continue end
@@ -121,22 +95,22 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 
 	-- ground-based object discovery
 	local groundEnt = ply:GetGroundEntity()
-	if IsValid(groundEnt) and isUsable(groundEnt, useOnGroundEnum, scale) then
+	if IsValid(groundEnt) and JBT.IsUsable(groundEnt, useOnGroundEnum, scale) then
 		nearest = groundEnt
 	end
 
 	-- prep for below
 	if IsValid(nearest) then
-		local point = getNearestPoint(nearest, searchCenter)
+		local point = JBT.GetNearestPoint(nearest, searchCenter)
 		nearestDist = util.DistanceToLine(point, searchCenter, forward)
 	end
 
 	-- radius-based object discovery
 	local findEnts = ents.FindInSphere(searchCenter, useRadius * scale)
 	for _, object in ipairs(findEnts) do
-		if not isUsable(object, useInRadiusEnum, scale) then continue end
+		if not JBT.IsUsable(object, useInRadiusEnum, scale) then continue end
 
-		local point = getNearestPoint(object, searchCenter)
+		local point = JBT.GetNearestPoint(object, searchCenter)
 
 		local dir = point - searchCenter
 		dir:Normalize()
@@ -187,7 +161,7 @@ hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
 
 		local mass = phys:GetMass()
 		if mass <= maxMass then return end -- just let the default behavior run
-		if mass > maxMass * scale ^ 2 then return end
+		if mass > maxMass * scale ^ powerMass:GetInt() then return end
 
 		ent.JBT_OldMass = mass
 		phys:SetMass(8)
