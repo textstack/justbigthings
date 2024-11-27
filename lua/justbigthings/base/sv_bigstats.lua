@@ -36,8 +36,8 @@ end
 
 local ENTITY = FindMetaTable("Entity")
 
-ENTITY.JBT_SetMaxHealth = ENTITTY.JBT_SetMaxHealth or ENTITY.SetMaxHealth
-function ENTITY:SetMaxHealth(maxHealth)
+ENTITY.JBT_SetMaxHealth = ENTITY.JBT_SetMaxHealth or ENTITY.SetMaxHealth
+function ENTITY:SetMaxHealth(maxHealth, nofix)
     if not self:IsPlayer() or not health:GetBool() then
         self:JBT_SetMaxHealth(maxHealth)
         return
@@ -45,7 +45,7 @@ function ENTITY:SetMaxHealth(maxHealth)
 
     self.JBT_MaxHealth = maxHealth
 
-    if JBT.RelativeStatSetFix(self, "MaxHealth") then
+    if not nofix and JBT.RelativeStatSetFix(self, "MaxHealth") then
         self:JBT_SetMaxHealth(maxHealth)
         return
     end
@@ -66,7 +66,7 @@ end
 local PLAYER = FindMetaTable("Player")
 
 PLAYER.JBT_SetMaxArmor = PLAYER.JBT_SetMaxArmor or PLAYER.SetMaxArmor
-function PLAYER:SetMaxArmor(maxArmor)
+function PLAYER:SetMaxArmor(maxArmor, nofix)
     if not armor:GetBool() then
         self:JBT_SetMaxArmor(maxArmor)
         return
@@ -74,7 +74,7 @@ function PLAYER:SetMaxArmor(maxArmor)
 
     self.JBT_MaxArmor = maxArmor
 
-    if JBT.RelativeStatSetFix(self, "MaxArmor") then
+    if not nofix and JBT.RelativeStatSetFix(self, "MaxArmor") then
         self:JBT_SetMaxArmor(maxArmor)
         return
     end
@@ -105,7 +105,7 @@ for _, stat in ipairs(speedStats) do
     local oldFunc = "JBT_" .. func
 
     PLAYER[oldFunc] = PLAYER[oldFunc] or PLAYER[func]
-    PLAYER[func] = function(self, amount)
+    PLAYER[func] = function(self, amount, nofix)
         if not speed:GetBool() then
             self[oldFunc](self, amount)
             return
@@ -113,7 +113,7 @@ for _, stat in ipairs(speedStats) do
 
         self["JBT_" .. stat] = amount
 
-        if JBT.RelativeStatSetFix(self, stat) then
+        if not nofix and JBT.RelativeStatSetFix(self, stat) then
             self[oldFunc](self, amount)
             return
         end
@@ -137,8 +137,8 @@ end
 local function setSpeeds()
     for _, ply in player.Iterator() do
         for _, stat in ipairs(speedStats) do
-            local amount = ply["JBT_" .. stat] or ply["Get" .. stat]()
-            ply["Set" .. stat](ply, amount)
+            local amount = ply["JBT_" .. stat] or ply["Get" .. stat](ply)
+            ply["Set" .. stat](ply, amount, true)
         end
     end
 end
@@ -146,14 +146,14 @@ end
 local function setArmor()
     for _, ply in player.Iterator() do
         local amount = ply.JBT_MaxArmor or ply:GetMaxArmor()
-        ply:SetMaxArmor(amount)
+        ply:SetMaxArmor(amount, true)
     end
 end
 
 local function setHealth()
     for _, ply in player.Iterator() do
         local amount = ply.JBT_MaxHealth or ply:GetMaxHealth()
-        ply:SetMaxHealth(amount)
+        ply:SetMaxHealth(amount, true)
     end
 end
 
