@@ -18,6 +18,8 @@ local usableContents = MASK_SOLID + CONTENTS_DEBRIS + CONTENTS_PLAYERCLIP
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/master/sp/src/game/server/player.cpp#L2766-L2780
 function JBT.IsUsable(ent, required, scale)
 	if not IsValid(ent) then return false end
+	required = required or 0
+	scale = scale or 1
 
 	if scale < 1 and enableMass:GetBool() then
 		local phys = ent:GetPhysicsObject()
@@ -29,7 +31,7 @@ function JBT.IsUsable(ent, required, scale)
 	if bit.band(caps, usableEnums) ~= 0 then return true end
 
 	if not enableMass:GetBool() then return false end
-	if scale < 1 then return false end
+	if scale <= 1 then return false end
 	if ent:IsPlayer() then return false end
 	if ent:HasSpawnFlags(SF_PHYSPROP_PREVENT_PICKUP) then return false end
 
@@ -63,7 +65,7 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 		if k == 1 then
 			tr = util.TraceLine({
 				start = searchCenter,
-				endpos = searchCenter + forward * 1024,
+				endpos = searchCenter + forward * 2048,
 				mask = usableContents,
 				filter = ply
 			})
@@ -82,11 +84,11 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 		end
 
 		local object = tr.Entity
-		local usable = JBT.IsUsable(object, 0, scale)
+		local usable = JBT.IsUsable(object, nil, scale)
 
 		while IsValid(object) and not usable and IsValid(object:GetParent()) do
 			object = object:GetParent()
-			usable = JBT.IsUsable(object, 0, scale)
+			usable = JBT.IsUsable(object, nil, scale)
 		end
 
 		if not usable then continue end
