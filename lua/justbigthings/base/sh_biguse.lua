@@ -90,8 +90,8 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 		local delta = tr.HitPos - tr.StartPos
 		local centerZ = object:WorldSpaceCenter().z
 		delta.z = JBT.IntervalDistance(tr.HitPos.z, centerZ + ply:OBBMins().z, centerZ + ply:OBBMaxs().z)
-		local dist = delta:Length()
 
+		local dist = delta:Length()
 		if dist >= useRadius * scale then continue end
 
 		nearest = object
