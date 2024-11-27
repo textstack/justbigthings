@@ -57,6 +57,14 @@ local function biggerSizeLimit()
 		self:OldMutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
 	end
 
+	local PLAYER = FindMetaTable("Player")
+
+	-- this will just spam the console if it isn't limited
+	PLAYER.OldSetStepSize = PLAYER.OldSetStepSize or PLAYER.SetStepSize
+	function PLAYER:SetStepSize(stepHeight)
+		self:OldSetStepSize(math.min(stepHeight, 512))
+	end
+
 	return true
 end
 
