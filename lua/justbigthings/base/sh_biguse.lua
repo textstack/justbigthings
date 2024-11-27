@@ -43,7 +43,7 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 	local scale = JBT.PlyScale(ply)
 	if scale < 1.01 then
 		if not smallMode:GetBool() then return end
-		if scale > 0.99 then return end
+		if scale > 0.95 then return end
 	end
 
 	local ang = ply:EyeAngles()
@@ -218,7 +218,7 @@ hook.Add("AllowPlayerPickup", "JBT_BigUse", function(ply, ent)
 	if not smallMode:GetBool() then return end
 
 	local scale = JBT.PlyScale(ply)
-	if scale > 0.99 then return end
+	if scale > 0.95 then return end
 
 	local phys = ent:GetPhysicsObject()
 	if not IsValid(phys) then return end
