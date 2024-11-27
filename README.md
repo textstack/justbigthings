@@ -1,6 +1,6 @@
 # JustBigThings
 
-Garry's Mod addon that adds some tweaks related to big players
+Garry's Mod addon that adds some tweaks related to big (or small) players
 
 ### Convars
 - `jbt_biguse_enabled` Whether to enable the big use module (default 1)
