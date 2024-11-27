@@ -51,7 +51,10 @@ local function biggerSizeLimit()
 
 		if JBT.HasPermission(ply, "jbt_pac_sizelimit") then
 			self:OldMutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
+			return
 		end
+
+		self:OldMutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
 	end
 
 	return true
