@@ -10,7 +10,7 @@ local function biggerSizeLimit()
 
 	local size = pac.emut.registered_mutators.size
 
-	size.OldReadArguments = size.OldReadArguments or size.ReadArguments
+	size.JBT_ReadArguments = size.JBT_ReadArguments or size.ReadArguments
 	function size:ReadArguments()
 		local multiplier = math.Clamp(net.ReadFloat(), 0.01, math.max(10, amount:GetFloat()))
 		local other = false
@@ -30,39 +30,39 @@ local function biggerSizeLimit()
 		return multiplier, other, hidden_state
 	end
 
-	size.OldMutate = size.OldMutate or size.Mutate
+	size.JBT_Mutate = size.JBT_Mutate or size.Mutate
 	function size:Mutate(multiplier, other, hidden_state)
 		if not enable:GetBool() then
-			self:OldMutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
+			self:JBT_Mutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
 			return
 		end
 
 		if not adminOnly:GetBool() then
-			self:OldMutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
+			self:JBT_Mutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
 			return
 		end
 
 		-- the linter is wrong
 		local ply = self.Owner
 		if not ply:IsPlayer() then
-			self:OldMutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
+			self:JBT_Mutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
 			return
 		end
 
 		if JBT.HasPermission(ply, "jbt_pac_biglimit") then
-			self:OldMutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
+			self:JBT_Mutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
 			return
 		end
 
-		self:OldMutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
+		self:JBT_Mutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
 	end
 
 	local PLAYER = FindMetaTable("Player")
 
 	-- this will just spam the console if it isn't limited
-	PLAYER.OldSetStepSize = PLAYER.OldSetStepSize or PLAYER.SetStepSize
+	PLAYER.JBT_SetStepSize = PLAYER.JBT_SetStepSize or PLAYER.SetStepSize
 	function PLAYER:SetStepSize(stepHeight)
-		self:OldSetStepSize(math.min(stepHeight, 512))
+		self:JBT_SetStepSize(math.min(stepHeight, 512))
 	end
 
 	return true

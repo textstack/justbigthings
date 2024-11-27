@@ -16,7 +16,7 @@ end
 
 local PHYSOBJ = FindMetaTable("PhysObj")
 
-PHYSOBJ.OldSetMass = PHYSOBJ.OldSetMass or PHYSOBJ.SetMass
+PHYSOBJ.JBT_SetMass = PHYSOBJ.JBT_SetMass or PHYSOBJ.SetMass
 
 function JBT.SetMass(ply)
 	local phys = ply:GetPhysicsObject()
@@ -24,22 +24,22 @@ function JBT.SetMass(ply)
 
 	ply.JBT_OldMass = ply.JBT_OldMass or phys:GetMass()
 	if ply.JBT_OldMass ~= defaultMass then
-		phys:OldSetMass(ply.JBT_OldMass)
+		phys:JBT_SetMass(ply.JBT_OldMass)
 		return
 	end
 
-	phys:OldSetMass(JBT.PlyMass(ply))
+	phys:JBT_SetMass(JBT.PlyMass(ply))
 end
 
 function PHYSOBJ:SetMass(mass)
 	if not enable:GetBool() then
-		self:OldSetMass(mass)
+		self:JBT_SetMass(mass)
 		return
 	end
 
 	local ply = self:GetEntity()
 	if not ply:IsPlayer() then
-		self:OldSetMass(mass)
+		self:JBT_SetMass(mass)
 		return
 	end
 
@@ -79,9 +79,9 @@ hook.Add("KeyRelease", "JBT_BigMass", crouchSetMass)
 
 local ENTITY = FindMetaTable("Entity")
 
-ENTITY.OldSetModelScale = ENTITY.OldSetModelScale or ENTITY.SetModelScale
+ENTITY.JBT_SetModelScale = ENTITY.JBT_SetModelScale or ENTITY.SetModelScale
 function ENTITY:SetModelScale(scale, deltaTime)
-	self:OldSetModelScale(scale, deltaTime)
+	self:JBT_SetModelScale(scale, deltaTime)
 
 	if not enable:GetBool() then return end
 	if not self:IsPlayer() then return end
@@ -96,23 +96,23 @@ end
 
 local PLAYER = FindMetaTable("Player")
 
-PLAYER.OldResetHull = PLAYER.OldResetHull or PLAYER.ResetHull
+PLAYER.JBT_ResetHull = PLAYER.JBT_ResetHull or PLAYER.ResetHull
 function PLAYER:ResetHull()
-	self:OldResetHull()
+	self:JBT_ResetHull()
 	JBT.SetMass(self)
 end
 
-PLAYER.OldSetHull = PLAYER.OldSetHull or PLAYER.SetHull
+PLAYER.JBT_SetHull = PLAYER.JBT_SetHull or PLAYER.SetHull
 function PLAYER:SetHull(mins, maxs)
-	self:OldSetHull(mins, maxs)
+	self:JBT_SetHull(mins, maxs)
 	if not enable:GetBool() then return end
 
 	JBT.SetMass(self)
 end
 
-PLAYER.OldSetHullDuck = PLAYER.OldSetHullDuck or PLAYER.SetHullDuck
+PLAYER.JBT_SetHullDuck = PLAYER.JBT_SetHullDuck or PLAYER.SetHullDuck
 function PLAYER:SetHullDuck(mins, maxs)
-	self:OldSetHullDuck(mins, maxs)
+	self:JBT_SetHullDuck(mins, maxs)
 	if not enable:GetBool() then return end
 
 	JBT.SetMass(self)

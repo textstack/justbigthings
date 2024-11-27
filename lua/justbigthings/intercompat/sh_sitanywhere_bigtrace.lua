@@ -11,14 +11,14 @@ local function bigTrace()
 	local model_blacklist = SitAnywhere.ModelBlacklist
 	local SitOnEntsMode = GetConVar("sitting_ent_mode")
 
-	SitAnywhere.OldValidSitTrace = SitAnywhere.OldValidSitTrace or SitAnywhere.ValidSitTrace
+	SitAnywhere.JBT_ValidSitTrace = SitAnywhere.JBT_ValidSitTrace or SitAnywhere.ValidSitTrace
 	function SitAnywhere.ValidSitTrace(ply, EyeTrace)
 		if not enable:GetBool() then
-			return SitAnywhere.OldValidSitTrace(ply, EyeTrace)
+			return SitAnywhere.JBT_ValidSitTrace(ply, EyeTrace)
 		end
 
 		if adminOnly:GetBool() and not JBT.HasPermission(ply, "jbt_sitanywhere_bigtrace") then
-			return SitAnywhere.OldValidSitTrace(ply, EyeTrace)
+			return SitAnywhere.JBT_ValidSitTrace(ply, EyeTrace)
 		end
 
 		local scale = JBT.PlyScale(ply)
