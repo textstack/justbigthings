@@ -2,9 +2,10 @@ local enable = CreateConVar("jbt_biguse_enabled", "1", FCVAR_NOTIFY + FCVAR_REPL
 local adminOnly = CreateConVar("jbt_biguse_adminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big usage is for admins only", 0, 1)
 local enableMass = CreateConVar("jbt_biguse_mass_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big players can carry heavier props", 0, 1)
 local powerMass = CreateConVar("jbt_biguse_mass_pow", "2", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "The mathematical power of the amount of mass big players can carry", 1, 3)
+local smallMode = CreateConVar("jbt_biguse_small", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether smaller players get a smaller range / mass limit for pickup", 0, 1)
 
 local usableEnums = 0x00000010 + 0x00000020 + 0x00000040 + 0x00000080
-local maxMass = 35
+local defaultMaxMass = 35
 local tangents = { 0, 1, 0.57735026919, 0.3639702342, 0.267949192431, 0.1763269807, -0.1763269807, -0.267949192431 }
 local eMinS = Vector(-16, -16, -16)
 local eMaxS = Vector(16, 16, 16)
@@ -17,19 +18,21 @@ local usableContents = MASK_SOLID + CONTENTS_DEBRIS + CONTENTS_PLAYERCLIP
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/master/sp/src/game/server/player.cpp#L2766-L2780
 function JBT.IsUsable(ent, required, scale)
 	if not IsValid(ent) then return false end
-	if ent:IsPlayer() then return false end
+	required = required or 0
 
 	local caps = ent:ObjectCaps()
 	if bit.band(caps, required) ~= required then return false end
 	if bit.band(caps, usableEnums) ~= 0 then return true end
 
 	if not enableMass:GetBool() then return false end
+	if ent:IsPlayer() then return false end
 	if ent:HasSpawnFlags(SF_PHYSPROP_PREVENT_PICKUP) then return false end
 
 	local phys = ent:GetPhysicsObject()
 	if not IsValid(phys) or not phys:IsMoveable() then return false end
 
-	return phys:GetMass() <= maxMass * scale ^ powerMass:GetInt() -- any physical thing with the right size can be moved
+	scale = scale or 1
+	return phys:GetMass() <= defaultMaxMass * scale ^ powerMass:GetInt() -- any physical thing with the right size can be moved
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseplayer_shared.cpp#L1068-L1270
@@ -38,7 +41,10 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 	if adminOnly:GetBool() and not JBT.HasPermission(ply, "jbt_biguse") then return end
 
 	local scale = JBT.PlyScale(ply)
-	if scale < 1.01 then return end
+	if scale < 1.01 then
+		if not smallMode:GetBool() then return end
+		if scale > 0.99 then return end
+	end
 
 	local ang = ply:EyeAngles()
 	local forward, up = ang:Forward(), ang:Up()
@@ -53,7 +59,7 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 		if k == 1 then
 			tr = util.TraceLine({
 				start = searchCenter,
-				endpos = searchCenter + forward * 1024,
+				endpos = searchCenter + forward * 2048,
 				mask = usableContents,
 				filter = ply
 			})
@@ -72,11 +78,11 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 		end
 
 		local object = tr.Entity
-		local usable = JBT.IsUsable(object, 0, scale)
+		local usable = JBT.IsUsable(object, nil, scale)
 
 		while IsValid(object) and not usable and IsValid(object:GetParent()) do
 			object = object:GetParent()
-			usable = JBT.IsUsable(object, 0, scale)
+			usable = JBT.IsUsable(object, nil, scale)
 		end
 
 		if not usable then continue end
@@ -134,8 +140,8 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 		end
 	end
 
-	if not IsValid(nearest) then return end
-	return nearest
+	if IsValid(nearest) then return nearest end
+	if scale < 1 then return defaultEnt end
 end)
 
 hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
@@ -160,8 +166,8 @@ hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
 		if not IsValid(phys) or not phys:IsMoveable() then return end
 
 		local mass = phys:GetMass()
-		if mass <= maxMass then return end -- just let the default behavior run
-		if mass > maxMass * scale ^ powerMass:GetInt() then return end
+		if mass <= defaultMaxMass then return end -- just let the default behavior run
+		if mass > defaultMaxMass * scale ^ powerMass:GetInt() then return end
 
 		ent.JBT_OldMass = mass
 		phys:SetMass(8)
@@ -205,4 +211,16 @@ hook.Add("OnPlayerPhysicsDrop", "JBT_BigUse", function(ply, ent)
 		phys:SetMass(ent.JBT_OldMass)
 		ent.JBT_OldMass = nil
 	end)
+end)
+
+hook.Add("AllowPlayerPickup", "JBT_BigUse", function(ply, ent)
+	if not enableMass:GetBool() then return end
+	if not smallMode:GetBool() then return end
+
+	local scale = JBT.PlyScale(ply)
+	if scale > 0.99 then return end
+
+	local phys = ent:GetPhysicsObject()
+	if not IsValid(phys) then return end
+	if phys:GetMass() > defaultMaxMass * scale ^ powerMass:GetInt() then return false end
 end)
