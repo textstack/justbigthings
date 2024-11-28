@@ -57,7 +57,7 @@ function JBT.PlyRefracStat(ply, stat)
 
 	local newMax = getMaxFunc(ply)
 	local frac = getFunc(ply) / oldMax
-	setFunc(ply, math.ceil(frac * newMax))
+	setFunc(ply, math.floor(frac * newMax))
 end
 
 -- get the original value of a stat
