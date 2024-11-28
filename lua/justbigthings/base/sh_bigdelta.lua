@@ -6,7 +6,16 @@ local enable = CreateConVar("jbt_bigdelta_enabled", "0", FCVAR_NOTIFY + FCVAR_RE
 
 local minimumMovingSpeed = 0.5
 local speedThatDoesntDoTheStupidIdleThing = 25
-local calcIdealsToOverride = {[ACT_MP_STAND_IDLE] = true, [ACT_MP_RUN] = true, [ACT_MP_WALK] = true}
+local calcIdealsToOverride = {
+	[ACT_MP_STAND_IDLE] = true,
+	[ACT_MP_RUN] = true,
+	[ACT_MP_WALK] = true
+}
+local unarmed = {
+	run_all_01 = true,
+	walk_all = true,
+	cwalk_all = true
+}
 
 -- does the player have bigdelta enabled?
 function JBT.PlyNeedsDelta(ply)
@@ -32,12 +41,6 @@ function JBT.EstimateYaw(ply, vel)
 	return ply.JBT_GaitYaw
 end
 
-local unarmed = {
-	run_all_01 = true,
-	walk_all = true,
-	cwalk_all = true
-}
-
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/shared/base_playeranimstate.cpp#L501-L530
 function JBT.CalcMovementPlaybackRate(ply, vel, maxSeqGroundSpeed, scale)
 	scale = scale or 1
@@ -59,7 +62,7 @@ function JBT.CalcMovementPlaybackRate(ply, vel, maxSeqGroundSpeed, scale)
 		playbackRate = math.max(playbackRate, 1.78 - math.atan(scale))
 
 		if len < 50 then
-			playbackRate = math.min(playBackRate, 0.25 + 0.25 / scale)
+			playbackRate = math.min(playbackRate, 0.25 + 0.25 / scale)
 		end
 	end
 
@@ -91,24 +94,35 @@ hook.Add("UpdateAnimation", "JBT_BigDelta", function(ply, vel, maxSeqGroundSpeed
 	ply:SetPoseParameter("move_y", moveY)
 end)
 
-hook.Add("CalcMainActivity", "JBT_BigDelta", function(ply, vel)
-	if not JBT.PlyNeedsDelta(ply) then return end
+local function gmDetour()
+	local gm = gmod.GetGamemode()
 
-	local scale = JBT.PlyScale(ply)
-	if scale < 1.01 then return end
+	gm.JBT_CalcMainActivity = gm.JBT_CalcMainActivity or gm.CalcMainActivity
+	function gm:CalcMainActivity(ply, vel)
+		local ideal, override = gm:JBT_CalcMainActivity(ply, vel)
 
-	gmod.GetGamemode():CalcMainActivity(ply, vel)
+		if not JBT.PlyNeedsDelta(ply) then return ideal, override end
 
-	local plyTable = ply:GetTable()
-	if not calcIdealsToOverride[plyTable.CalcIdeal] then return end
+		local scale = JBT.PlyScale(ply)
+		if scale < 1.01 then return ideal, override end
 
-	local len2d = vel:Length2DSqr()
-	if len2d > (150 * scale) ^ 2 then
-		plyTable.CalcIdeal = ACT_MP_RUN
-	elseif len2d > (0.5 * scale) ^ 2 then
-		plyTable.CalcIdeal = ACT_MP_WALK
+		if not calcIdealsToOverride[ply.CalcIdeal] then return ideal, override end
+
+		ply.CalcSeqOverride = -1
+
+		local len2d = vel:Length2DSqr()
+		if len2d > 22500 * scale then
+			ply.CalcIdeal = ACT_MP_RUN
+		elseif len2d > 0.25 * scale then
+			ply.CalcIdeal = ACT_MP_WALK
+		end
+
+		return ply.CalcIdeal, ply.CalcSeqOverride
 	end
-end)
+end
+
+hook.Add("PostGamemodeLoaded", "JBT_BigDelta", gmDetour)
+if JBT_LOADED then gmDetour() end
 
 if CLIENT then return end
 
