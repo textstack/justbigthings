@@ -54,3 +54,19 @@ function JBT.GetNearestPoint(ent, point)
 
 	return ent:LocalToWorld(newPoint)
 end
+
+timer.Create("JBT_CheckSizeChange", 0.5, 0, function()
+	for _, ply in player.Iterator() do
+		local scale = JBT.PlyScale(ply)
+		if not ply.JBT_OldScale then
+			ply.JBT_OldScale = scale
+			continue
+		end
+
+		if ply.JBT_OldScale ~= scale then
+			hook.Run("JBT_ScaleChanged", ply, scale, ply.JBT_OldScale)
+		end
+
+		ply.JBT_OldScale = scale
+	end
+end)

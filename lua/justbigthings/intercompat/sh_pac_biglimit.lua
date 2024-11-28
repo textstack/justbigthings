@@ -3,6 +3,14 @@ local adminOnly = CreateConVar("jbt_pac_biglimit_adminonly", "1", FCVAR_NOTIFY +
 local amount = CreateConVar("jbt_pac_biglimit_max", "100", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "How much the pac size max is modified", 0.01, 1000)
 local amountMin = CreateConVar("jbt_pac_biglimit_min", "0.01", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "How much the pac size min is modified", 0.01, 1000)
 
+local PLAYER = FindMetaTable("Player")
+
+-- this will just spam the console if it isn't limited
+PLAYER.JBT_SetStepSize = PLAYER.JBT_SetStepSize or PLAYER.SetStepSize
+function PLAYER:SetStepSize(stepHeight)
+	self:JBT_SetStepSize(math.min(stepHeight, 512))
+end
+
 local function biggerSizeLimit()
 	if not pac or not pac.emut or not pac.emut.registered_mutators or not pac.emut.registered_mutators.size then
 		return
@@ -55,14 +63,6 @@ local function biggerSizeLimit()
 		end
 
 		self:JBT_Mutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
-	end
-
-	local PLAYER = FindMetaTable("Player")
-
-	-- this will just spam the console if it isn't limited
-	PLAYER.JBT_SetStepSize = PLAYER.JBT_SetStepSize or PLAYER.SetStepSize
-	function PLAYER:SetStepSize(stepHeight)
-		self:JBT_SetStepSize(math.min(stepHeight, 512))
 	end
 
 	return true

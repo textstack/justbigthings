@@ -13,6 +13,7 @@ Garry's Mod addon that adds some tweaks related to big (or small) players
 - `jbt_pac_biglimit_max` How much the pac size max is modified (default 100) (pac3 default 10)
 - `jbt_pac_biglimit_min` How much the pac size min is modified (defalt 0.01) (pac3 default 0.1)
 - `jbt_bigstats_enabled` Whether to enable the big stats module (default 0)
+- `jbt_bigstats_adminonly` Whether stats scaling only affects admins (default 0)
 - `jbt_bigstats_health` Whether bigger players get more health (default 1)
 - `jbt_bigstats_armor` Whether bigger players get more armor (default 0)
 - `jbt_bigstats_speed` Whether bigger players get more speed (default 1)
