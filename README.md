@@ -2,7 +2,7 @@
 
 Garry's Mod addon that adds some tweaks related to big (or small) players
 
-### Convars
+### Server Convars
 - `jbt_biguse_enabled` Whether to enable the big use module (default 1)
 - `jbt_biguse_adminonly` Whether big usage is for admins only (default 0)
 - `jbt_biguse_mass_enabled` Whether big players can carry heavier props (default 1)
@@ -19,13 +19,16 @@ Garry's Mod addon that adds some tweaks related to big (or small) players
 - `jbt_bigstats_speed` Whether bigger players get more speed (default 1)
 - `jbt_bigstats_small` Whether stats scaling affects small players too (default 1)
 - `jbt_bigdelta_enabled` Whether to enable the big delta module (default 1)
+- `jbt_bigsit_enabled` Whether to enable the big sit module (default 1)
 - `jbt_sitanywhere_bigtrace_enabled` Whether to enable the sit anywhere module (default 1)
 - `jbt_sitanywhere_bigtrace_adminonly` Whether sitanywhere trace scaling should only be for admins (default 0)
 - `jbt_sitanywhere_bigtrace_distance` What the base distance check should be for sitting (default 100)
 - `jbt_sitanywhere_bigtrace_small` Whether smaller players get a smaller range for sitanywhere (default 0)
 - `jbt_adminonly_is_superadminonly` Whether 'adminonly' settings should actually be superadmin only (default 0)
+
+### Client/Personal Convars (0 == off, 1 == let server decide, 2 == on)
 - `jbt_cl_bigsit` Whether player size should affect the camera view while sitting (default 1)
-- `jbt_cl_bigdelta` Whether your movement animations sync properly with scale (per-player) (default 1)
+- `jbt_cl_bigdelta` Whether your movement animations sync properly with scale (default 1)
 
 ### Disabled Convars (due to the module being too unstable)
 - `jbt_bigmass_enabled` Whether to enable the big mass module (default 0)

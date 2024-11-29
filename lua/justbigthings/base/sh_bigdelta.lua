@@ -1,6 +1,6 @@
 local personalEnable
 if CLIENT then
-	personalEnable = CreateClientConVar("jbt_cl_bigdelta", "1", true, true, "Whether your movement animations sync properly with scale (per-player)", 0, 1)
+	personalEnable = CreateClientConVar("jbt_cl_bigdelta", "1", true, true, "Whether your movement animations sync properly with scale (per-player)", 0, 2)
 end
 local enable = CreateConVar("jbt_bigdelta_enabled", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big delta module", 0, 1)
 
@@ -19,13 +19,14 @@ local unarmed = {
 
 -- does the player have bigdelta enabled?
 function JBT.PlyNeedsDelta(ply)
-	if not enable:GetBool() then return false end
-
+	local val
 	if CLIENT and ply == LocalPlayer() then
-		return personalEnable:GetBool()
+		val = personalEnable:GetInt()
+	else
+		val = ply:GetNWInt("JBT_BigDelta", 1)
 	end
 
-	return ply:GetNWBool("JBT_BigDelta", true)
+	return val > 1 or (enable:GetBool() and val > 0)
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/shared/base_playeranimstate.cpp#L569-L581
@@ -130,7 +131,7 @@ timer.Create("JBT_UpdateBigDeltaPrefs", 5, 0, function()
 	if not enable:GetBool() then return end
 
 	for _, ply in player.Iterator() do
-		local set = ply:GetInfoNum("jbt_cl_bigdelta", 1) == 1
-		ply:SetNWBool("JBT_BigDelta", set)
+		local set = ply:GetInfoNum("jbt_cl_bigdelta", 1)
+		ply:SetNWInt("JBT_BigDelta", set)
 	end
 end)
