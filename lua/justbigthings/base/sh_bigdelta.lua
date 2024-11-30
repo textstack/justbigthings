@@ -2,7 +2,7 @@ local personalEnable
 if CLIENT then
 	personalEnable = CreateClientConVar("jbt_cl_bigdelta", "1", true, true, "Whether your movement animations sync properly with scale (per-player)", 0, 2)
 end
-local enable = CreateConVar("jbt_bigdelta_enabled", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big delta module", 0, 1)
+local enable = CreateConVar("jbt_bigdelta_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big delta module", 0, 1)
 
 local minimumMovingSpeed = 0.5
 local speedThatDoesntDoTheStupidIdleThing = 25
