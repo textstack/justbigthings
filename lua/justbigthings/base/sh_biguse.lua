@@ -1,6 +1,6 @@
 local enable = CreateConVar("jbt_biguse_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big use module", 0, 1)
 local adminOnly = CreateConVar("jbt_biguse_adminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big usage is for admins only", 0, 1)
-local enableMass = CreateConVar("jbt_biguse_mass_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big players can carry heavier props", 0, 1)
+local enableMass = CreateConVar("jbt_biguse_mass", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big players can carry heavier props", 0, 1)
 local powerMass = CreateConVar("jbt_biguse_mass_pow", "2", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "The mathematical power of the amount of mass big players can carry", 1, 3)
 local smallMode = CreateConVar("jbt_biguse_small", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether smaller players get a smaller range / mass limit for pickup", 0, 1)
 
@@ -16,7 +16,7 @@ local useDrop = 72
 local usableContents = MASK_SOLID + CONTENTS_DEBRIS + CONTENTS_PLAYERCLIP
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/master/sp/src/game/server/player.cpp#L2766-L2780
-function JBT.IsUsable(ent, required, scale)
+function JBT.IsUsable(ent, required, scale, ply)
 	if not IsValid(ent) then return false end
 	required = required or 0
 
@@ -24,7 +24,8 @@ function JBT.IsUsable(ent, required, scale)
 	if bit.band(caps, required) ~= required then return false end
 	if bit.band(caps, usableEnums) ~= 0 then return true end
 
-	if not enableMass:GetBool() then return false end
+	if not IsValid(ply) then return false end
+	if not JBT.HasEnabled(ply, enableMass, "JBT_BigUse_Mass") then return false end
 	if ent:IsPlayer() then return false end
 	if ent:HasSpawnFlags(SF_PHYSPROP_PREVENT_PICKUP) then return false end
 
@@ -37,8 +38,8 @@ end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseplayer_shared.cpp#L1068-L1270
 hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
-	if not enable:GetBool() then return end
-	if adminOnly:GetBool() and not JBT.HasPermission(ply, "jbt_biguse") then return end
+	if not JBT.HasEnabled(ply, enable, "JBT_BigUse") then return end
+	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_biguse", "JBT_BigUse") then return end
 
 	local scale = JBT.PlyScale(ply)
 	if scale < 1.01 then
@@ -78,11 +79,11 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 		end
 
 		local object = tr.Entity
-		local usable = JBT.IsUsable(object, nil, scale)
+		local usable = JBT.IsUsable(object, nil, scale, ply)
 
 		while IsValid(object) and not usable and IsValid(object:GetParent()) do
 			object = object:GetParent()
-			usable = JBT.IsUsable(object, nil, scale)
+			usable = JBT.IsUsable(object, nil, scale, ply)
 		end
 
 		if not usable then continue end
@@ -101,7 +102,7 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 
 	-- ground-based object discovery
 	local groundEnt = ply:GetGroundEntity()
-	if IsValid(groundEnt) and JBT.IsUsable(groundEnt, useOnGroundEnum, scale) then
+	if IsValid(groundEnt) and JBT.IsUsable(groundEnt, useOnGroundEnum, scale, ply) then
 		nearest = groundEnt
 	end
 
@@ -114,7 +115,7 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 	-- radius-based object discovery
 	local findEnts = ents.FindInSphere(searchCenter, useRadius * scale)
 	for _, object in ipairs(findEnts) do
-		if not JBT.IsUsable(object, useInRadiusEnum, scale) then continue end
+		if not JBT.IsUsable(object, useInRadiusEnum, scale, ply) then continue end
 
 		local point = JBT.GetNearestPoint(object, searchCenter)
 
@@ -145,8 +146,8 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 end)
 
 hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
-	if not enableMass:GetBool() or not enable:GetBool() then return end
-	if adminOnly:GetBool() and not JBT.HasPermission(ply, "jbt_biguse") then return end
+	if not JBT.HasEnabled(ply, enable, enableMass, "JBT_BigUse_Mass", "JBT_BigUse") then return end
+	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_biguse", "JBT_BigUse") then return end
 
 	local scale = JBT.PlyScale(ply)
 	if scale < 1.01 then return end
@@ -214,8 +215,8 @@ hook.Add("OnPlayerPhysicsDrop", "JBT_BigUse", function(ply, ent)
 end)
 
 hook.Add("AllowPlayerPickup", "JBT_BigUse", function(ply, ent)
-	if not enableMass:GetBool() then return end
-	if not smallMode:GetBool() then return end
+	if not JBT.HasEnabled(ply, enable, enableMass, smallMode, "JBT_BigUse", "JBT_BigUse_Small", "JBT_BigUse_Mass") then return end
+	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_biguse", "JBT_BigUse") then return end
 
 	local scale = JBT.PlyScale(ply)
 	if scale > 0.95 then return end

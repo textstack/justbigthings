@@ -5,7 +5,7 @@ local power = CreateConVar("jbt_bigmass_pow", "2", FCVAR_NOTIFY + FCVAR_SERVER_C
 function JBT.PlyMass(ply, phys)
 	local default = JBT.PlyOriginalMass(ply, phys)
 
-	if not enable:GetBool() then return default end
+	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return default end
 
 	local scale = JBT.PlyScale(ply)
 	if scale < 1.01 and scale > 0.95 then return default end
@@ -40,7 +40,7 @@ function PHYSOBJ:SetMass(mass, nofix)
 		return
 	end
 
-	if not enable:GetBool() then
+	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then
 		self:JBT_SetMass(mass)
 		if IsValid(ply.JBT_Phys) then
 			ply.JBT_Phys:JBT_SetMass(mass)
@@ -72,7 +72,7 @@ end
 PHYSOBJ.JBT_GetMass = PHYSOBJ.JBT_GetMass or PHYSOBJ.GetMass
 function PHYSOBJ:GetMass()
 	local ply = self:GetEntity()
-	if ply:IsPlayer() and enable:GetBool() then
+	if ply:IsPlayer() and JBT.HasEnabled(ply, enable, "JBT_BigMass") then
 		JBT.RelativeStatGetFix(ply, "Mass")
 	end
 
@@ -89,13 +89,13 @@ cvars.AddChangeCallback("jbt_bigmass_enabled", setEveryone)
 cvars.AddChangeCallback("jbt_bigmass_pow", setEveryone)
 
 hook.Add("PlayerSpawn", "JBT_BigMass", function(ply)
-	if not enable:GetBool() then return end
+	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
 
 	JBT.PlyResyncMass(ply)
 end)
 
 hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
-	if not enable:GetBool() then return end
+	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
 
 	JBT.PlyResyncMass(ply)
 end)
@@ -118,7 +118,7 @@ local function crouchFindPhys(ply, key)
 			ply.JBT_Phys = ply:GetPhysicsObject()
 		end
 
-		if not enable:GetBool() then return end
+		if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
 		if not set then return end
 		if not IsValid(ply.JBT_Phys) or not IsValid(ply.JBT_CPhys) then return end
 
@@ -158,7 +158,7 @@ local sounds = {
 		}
 	},
 	{
-		mat = { "plaster", "tile" },
+		mat = { "plaster" },
 		sounds = {
 			"physics/plaster/drywall_impact_hard1.wav",
 			"physics/plaster/drywall_impact_hard2.wav",
@@ -190,7 +190,7 @@ local sounds = {
 		}
 	},
 	{
-		mat = { "grass", "sand", "dirt", "ice", "snow" },
+		mat = { "grass", "sand", "dirt", "snow", "gravel" },
 		sounds = {
 			"physics/flesh/flesh_impact_hard1.wav",
 			"physics/flesh/flesh_impact_hard2.wav",
@@ -201,10 +201,9 @@ local sounds = {
 		}
 	},
 	default = {
-		"physics/concrete/boulder_impact_hard1.wav",
-		"physics/concrete/boulder_impact_hard2.wav",
-		"physics/concrete/boulder_impact_hard3.wav",
-		"physics/concrete/boulder_impact_hard4.wav"
+		"physics/concrete/rock_impact_hard1.wav",
+		"physics/concrete/rock_impact_hard2.wav",
+		"physics/concrete/rock_impact_hard3.wav"
 	}
 }
 
@@ -217,7 +216,7 @@ local function gmDetour()
 	function gm:PlayerFootstep(ply, pos, foot, snd, vol, filter)
 		if self:JBT_PlayerFootstep(ply, pos, foot, snd, vol, filter) then return true end
 
-		if not enable:GetBool() then return end
+		if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
 		if string.find(snd, "ladder") or string.find(snd, "wade") or string.find(snd, "slosh") then return end
 
 		local scale = JBT.PlyScale(ply)
@@ -228,7 +227,7 @@ local function gmDetour()
 			local pitch = 100 / (0.75 + scale * 0.25)
 
 			ply:EmitSound(snd, sndLevel, pitch, vol, CHAN_BODY)
-		else
+		elseif scale <= 8 then
 			-- stompy
 
 			local bigSound
@@ -253,6 +252,12 @@ local function gmDetour()
 			local pitch = math.max(120 / (0.9 + scale * 0.1), 45)
 
 			ply:EmitSound(bigSound, 100, pitch, vol, CHAN_BODY)
+		else
+			-- mega stompy
+
+			local pitch = math.max(110 / (0.9 + scale * 0.025), 45)
+
+			ply:EmitSound("physics/concrete/boulder_impact_hard" .. math.random(4) .. ".wav", 100, pitch, vol, CHAN_BODY)
 		end
 
 		return true

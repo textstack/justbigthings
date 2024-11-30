@@ -8,7 +8,7 @@ local function gmDetour()
 	gm.JBT_PlayerFootstep = gm.JBT_PlayerFootstep or gm.PlayerFootstep or function() end
 	function gm:PlayerFootstep(ply, pos, foot, snd, vol, filter)
 		if self:JBT_PlayerFootstep(ply, pos, foot, snd, vol, filter) then return true end
-		if enable:GetBool() then return true end
+		if JBT.HasEnabled(ply, enable, "JBT_BigMass") then return true end
 	end
 end
 

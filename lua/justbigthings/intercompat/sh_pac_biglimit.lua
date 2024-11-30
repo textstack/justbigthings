@@ -40,16 +40,6 @@ local function biggerSizeLimit()
 
 	size.JBT_Mutate = size.JBT_Mutate or size.Mutate
 	function size:Mutate(multiplier, other, hidden_state)
-		if not enable:GetBool() then
-			self:JBT_Mutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
-			return
-		end
-
-		if not adminOnly:GetBool() then
-			self:JBT_Mutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
-			return
-		end
-
 		-- the linter is wrong
 		local ply = self.Owner
 		if not ply:IsPlayer() then
@@ -57,12 +47,17 @@ local function biggerSizeLimit()
 			return
 		end
 
-		if JBT.HasPermission(ply, "jbt_pac_biglimit") then
-			self:JBT_Mutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
+		if not JBT.HasEnabled(ply, enable, "JBT_Pac_BigLimit") then
+			self:JBT_Mutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
 			return
 		end
 
-		self:JBT_Mutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
+		if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_pac_biglimit", "JBT_Pac_BigLimit") then
+			self:JBT_Mutate(math.Clamp(multiplier, 0.1, 10), other, hidden_state)
+			return
+		end
+
+		self:JBT_Mutate(math.Clamp(multiplier, amountMin:GetFloat(), amount:GetFloat()), other, hidden_state)
 	end
 
 	return true

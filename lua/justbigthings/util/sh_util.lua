@@ -3,7 +3,6 @@ local superadmin = CreateConVar("jbt_adminonly_is_superadminonly", "0", FCVAR_NO
 local defaultHeight = 72
 local defaultCrouchingHeight = 36
 local defaultWidth = 32
-local defaultStatValue = 100
 
 -- uses hull height to calculate size with hull width constraining the result
 function JBT.PlyScale(ply)
@@ -28,6 +27,40 @@ function JBT.HasPermission(ply, permission)
 	end
 
 	return false
+end
+
+-- check if module is enabled for the player
+function JBT.HasEnabled(ply, ...)
+	if not IsValid(ply) then return false end
+
+	local pass
+	local nwPass
+	for _, v in ipairs({...}) do
+		if type(v) == "string" then
+			if not ply:GetNWBool(v) then
+				nwPass = false
+			elseif nwPass == nil then
+				nwPass = true
+			end
+		else
+			if not v:GetBool() then
+				pass = false
+			elseif pass == nil then
+				pass = true
+			end
+		end
+	end
+
+	return pass or nwPass or false
+end
+
+-- determines whether admin only mode should apply and how that affects the player
+function JBT.AdminOnlyCheck(ply, convar, perm, netvar)
+	if netvar and ply:GetNWBool(netvar) then return true end
+
+	if convar:GetBool() and not JBT.HasPermission(ply, "jbt_biguse") then return false end
+
+	return true
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseplayer_shared.cpp#L1051-L1066

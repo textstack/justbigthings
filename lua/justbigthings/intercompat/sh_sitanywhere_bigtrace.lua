@@ -13,16 +13,16 @@ local function bigTrace()
 
 	SitAnywhere.JBT_ValidSitTrace = SitAnywhere.JBT_ValidSitTrace or SitAnywhere.ValidSitTrace
 	function SitAnywhere.ValidSitTrace(ply, EyeTrace)
-		if not enable:GetBool() then
+		if not JBT.HasEnabled(ply, enable, "JBT_SitAnywhere_BigTrace") then
 			return SitAnywhere.JBT_ValidSitTrace(ply, EyeTrace)
 		end
 
-		if adminOnly:GetBool() and not JBT.HasPermission(ply, "jbt_sitanywhere_bigtrace") then
+		if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_sitanywhere_bigtrace", "JBT_SitAnywhere_BigTrace") then
 			return SitAnywhere.JBT_ValidSitTrace(ply, EyeTrace)
 		end
 
 		local scale = JBT.PlyScale(ply)
-		if scale < 1.01 and not smallMode:GetBool() then
+		if scale < 1.01 and not JBT.HasEnabled(ply, smallMode, "JBT_SitAnywhere_BigTrace_Small") then
 			scale = 1
 		end
 
