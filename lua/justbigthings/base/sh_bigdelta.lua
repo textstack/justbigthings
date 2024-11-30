@@ -78,6 +78,45 @@ function JBT.Dampen(speed, from, to)
 	return Lerp(1 - math.exp(-speed * FrameTime()), from, to)
 end
 
+-- mark a pose as not to be modified by JBT
+function JBT.PoseBlock(ply, pose)
+	ply.JBT_PoseBlock = ply.JBT_PoseBlock or {}
+	ply.JBT_PoseBlock[pose] = true
+end
+
+-- set a poseparam
+function JBT.SetPoseParam(ply, pose, value)
+	if ply.JBT_PoseBlock and ply.JBT_PoseBlock[pose] then return end
+
+	ply:SetPoseParameter(pose, value, true)
+end
+
+local ENTITY = FindMetaTable("Entity")
+
+ENTITY.JBT_SetPoseParameter = ENTITY.JBT_SetPoseParameter or ENTITY.SetPoseParameter
+function ENTITY:SetPoseParameter(poseName, poseValue, bypass)
+	self:JBT_SetPoseParameter(poseName, poseValue)
+
+	if not self:IsPlayer() or bypass then return end
+
+	if type(poseName) == "number" then
+		poseName = self:GetPoseParameterName(poseName)
+	end
+
+	if poseName == "move_x" or poseName == "move_y" then
+		JBT.PoseBlock(self, poseName)
+	end
+end
+
+ENTITY.JBT_ClearPoseParameters = ENTITY.JBT_ClearPoseParameters or ENTITY.ClearPoseParameters
+function ENTITY:ClearPoseParameters()
+	self:JBT_ClearPoseParameters()
+
+	if not self:IsPlayer() then return end
+
+	self.JBT_PoseBlock = nil
+end
+
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/shared/base_playeranimstate.cpp#L587
 hook.Add("UpdateAnimation", "JBT_BigDelta", function(ply, vel, maxSeqGroundSpeed)
 	if not JBT.PlyNeedsDelta(ply) then return end
@@ -91,8 +130,8 @@ hook.Add("UpdateAnimation", "JBT_BigDelta", function(ply, vel, maxSeqGroundSpeed
 	local moveX = math.cos(math.rad(yaw)) * playbackRate
 	local moveY = -math.sin(math.rad(yaw)) * playbackRate
 
-	ply:SetPoseParameter("move_x", moveX)
-	ply:SetPoseParameter("move_y", moveY)
+	JBT.SetPoseParam(ply, "move_x", moveX)
+	JBT.SetPoseParam(ply, "move_y", moveY)
 end)
 
 local function gmDetour()
@@ -107,6 +146,8 @@ local function gmDetour()
 		local scale = JBT.PlyScale(ply)
 		if scale < 1.01 then return ideal, override end
 
+		if ply:InVehicle() then return ideal, override end
+		if ply.m_bWasNoclipping then return ideal, override end
 		if not calcIdealsToOverride[ply.CalcIdeal] then return ideal, override end
 
 		ply.CalcSeqOverride = -1
