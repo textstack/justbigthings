@@ -175,13 +175,16 @@ local function gmDetour()
 			stepTime = stepTime + 50
 		end
 
+		--[[
 		if scale <= 0.95 then
 			return stepTime * (0.33 + scale * 0.66)
 		end
+		--]]
 
 		return stepTime
 	end
 
+	--[[ changing anim rate was not as good of an idea as i thought
 	gm.JBT_UpdateAnimation = gm.JBT_UpdateAnimation or gm.UpdateAnimation or function() end
 	function gm:UpdateAnimation(ply, vel, maxSeqGroundSpeed)
 		self:JBT_UpdateAnimation(ply, vel, maxSeqGroundSpeed)
@@ -210,6 +213,7 @@ local function gmDetour()
 
 		ply:SetPlaybackRate(rate)
 	end
+	--]]
 
 	gm.JBT_CalcMainActivity = gm.JBT_CalcMainActivity or gm.CalcMainActivity or function() end
 	function gm:CalcMainActivity(ply, vel)
