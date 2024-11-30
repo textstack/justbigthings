@@ -135,13 +135,56 @@ hook.Add("UpdateAnimation", "JBT_BigDelta", function(ply, vel, maxSeqGroundSpeed
 end)
 
 local function gmDetour()
+	if JBT_NOGM then return end
+
 	local gm = gmod.GetGamemode()
 
-	if JBT_NOGM then return end
+	-- wish i could just modify the base gamemode...
+	-- but gmod's 'inheritance' actually copies the base stuff to the current
+	-- so that would be useless
+
+	gm.JBT_PlayerStepSoundTime = gm.JBT_PlayerStepSoundTime or gm.PlayerStepSoundTime
+	function gm:PlayerStepSoundTime(ply, stepType, walking)
+		if not JBT.PlyNeedsDelta(ply) then
+			return self:JBT_PlayerStepSoundTime(ply, stepType, walking)
+		end
+
+		local scale = JBT.PlyScale(ply)
+		if scale < 1.01 and scale > 0.95 then
+			return self:JBT_PlayerStepSoundTime(ply, stepType, walking)
+		end
+
+		local stepTime = 350
+		local fMaxSpeed = ply:GetMaxSpeed() / math.sqrt(scale)
+
+		if stepType == STEPSOUNDTIME_NORMAL or stepType == STEPSOUNDTIME_WATER_FOOT then
+			if fMaxSpeed <= 100 then
+				stepTime = 400
+			elseif fMaxSpeed <= 300 then
+				stepTime = 350
+			else
+				stepTime = 250
+			end
+		elseif stepType == STEPSOUNDTIME_ON_LADDER then
+			stepTime = 450
+		elseif stepType == STEPSOUNDTIME_WATER_KNEE then
+			stepTime = 600
+		end
+
+		if ply:Crouching() then
+			stepTime = stepTime + 50
+		end
+
+		if scale <= 0.95 then
+			return stepTime * (0.33 + scale * 0.66)
+		end
+
+		return stepTime
+	end
 
 	gm.JBT_UpdateAnimation = gm.JBT_UpdateAnimation or gm.UpdateAnimation
 	function gm:UpdateAnimation(ply, vel, maxSeqGroundSpeed)
-		gm:JBT_UpdateAnimation(ply, vel, maxSeqGroundSpeed)
+		self:JBT_UpdateAnimation(ply, vel, maxSeqGroundSpeed)
 
 		if not JBT.PlyNeedsDelta(ply) then return end
 
@@ -170,7 +213,7 @@ local function gmDetour()
 
 	gm.JBT_CalcMainActivity = gm.JBT_CalcMainActivity or gm.CalcMainActivity
 	function gm:CalcMainActivity(ply, vel)
-		local ideal, override = gm:JBT_CalcMainActivity(ply, vel)
+		local ideal, override = self:JBT_CalcMainActivity(ply, vel)
 
 		if not JBT.PlyNeedsDelta(ply) then return ideal, override end
 		if ply:InVehicle() then return ideal, override end
