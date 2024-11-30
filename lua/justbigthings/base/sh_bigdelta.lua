@@ -137,19 +137,47 @@ end)
 local function gmDetour()
 	local gm = gmod.GetGamemode()
 
+	if JBT_NOGM then return end
+
+	gm.JBT_UpdateAnimation = gm.JBT_UpdateAnimation or gm.UpdateAnimation
+	function gm:UpdateAnimation(ply, vel, maxSeqGroundSpeed)
+		gm:JBT_UpdateAnimation(ply, vel, maxSeqGroundSpeed)
+
+		if not JBT.PlyNeedsDelta(ply) then return end
+
+		local scale = JBT.PlyScale(ply)
+		if scale > 0.95 then return end
+
+		local len = vel:Length()
+		local movement = 1.0
+
+		if len > 0.2 then
+			movement = len / maxSeqGroundSpeed
+		end
+
+		local rate = math.min(movement, 2)
+
+		if ply:WaterLevel() >= 2 then
+			rate = math.max(rate, 0.5)
+		elseif not ply:IsOnGround() and len >= 1000 then
+			rate = 0.1
+		else
+			rate = rate / (0.33 + scale * 0.66)
+		end
+
+		ply:SetPlaybackRate(rate)
+	end
+
 	gm.JBT_CalcMainActivity = gm.JBT_CalcMainActivity or gm.CalcMainActivity
 	function gm:CalcMainActivity(ply, vel)
 		local ideal, override = gm:JBT_CalcMainActivity(ply, vel)
 
 		if not JBT.PlyNeedsDelta(ply) then return ideal, override end
-
-		local scale = JBT.PlyScale(ply)
-		if scale < 1.01 then return ideal, override end
-
 		if ply:InVehicle() then return ideal, override end
 		if ply.m_bWasNoclipping then return ideal, override end
 		if not calcIdealsToOverride[ply.CalcIdeal] then return ideal, override end
 
+		local scale = JBT.PlyScale(ply)
 		ply.CalcSeqOverride = -1
 
 		local len2d = vel:Length2DSqr()
