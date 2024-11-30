@@ -6,7 +6,6 @@ local speed = CreateConVar("jbt_bigstats_speed", "1", FCVAR_NOTIFY + FCVAR_SERVE
 local smallMode = CreateConVar("jbt_bigstats_small", "1", FCVAR_NOTIFY + FCVAR_SERVER_CAN_EXECUTE, "Whether stats scaling affects small players too", 0, 1)
 
 local statRound = 5
-local defaultStatValue = 100
 
 -- return number scaled by the appropriate amount
 function JBT.PlyStat(ply, default, sqrt)
@@ -29,9 +28,20 @@ function JBT.PlyStat(ply, default, sqrt)
 	end
 end
 
+-- get the original value of a stat
+function JBT.PlyOriginalStat(ply, stat, default)
+	local amount = ply["JBT_" .. stat]
+	if amount then return amount end
+
+	local getFunc = ply["Get" .. stat]
+	if getFunc then return getFunc(ply) end
+
+	return default or defaultStatValue, true
+end
+
 -- reapply "original" amount to get the rescaled amount
 function JBT.PlyResyncStat(ply, stat)
-	local amount = JBT.PlyOriginalStatValue(ply, stat)
+	local amount = JBT.PlyOriginalStat(ply, stat)
 	ply["Set" .. stat](ply, amount, true)
 end
 
@@ -58,32 +68,6 @@ function JBT.PlyRefracStat(ply, stat)
 	local newMax = getMaxFunc(ply)
 	local frac = getFunc(ply) / oldMax
 	setFunc(ply, math.floor(frac * newMax))
-end
-
--- get the original value of a stat
-function JBT.PlyOriginalStatValue(ply, stat)
-	local amount = ply["JBT_" .. stat]
-	if amount then return amount end
-
-	local getFunc = ply["Get" .. stat]
-	if getFunc then return getFunc(ply) end
-
-	return defaultStatValue, true
-end
-
--- if something tries ply:SetMaxHealth(ply:GetMaxHealth() + 1), we need to account for it
-function JBT.RelativeStatSetFix(ply, stat)
-	return ply["JBT_Get" .. stat]
-end
-function JBT.RelativeStatGetFix(ply, stat)
-	local var = "JBT_Get" .. stat
-
-	ply[var] = true
-	timer.Create(var .. "_" .. ply:UserID(), 0, 1, function()
-		if not IsValid(ply) then return end
-
-		ply[var] = nil
-	end)
 end
 
 local ENTITY = FindMetaTable("Entity")

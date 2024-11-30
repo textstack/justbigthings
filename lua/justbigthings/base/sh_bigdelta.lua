@@ -143,7 +143,7 @@ local function gmDetour()
 	-- but gmod's 'inheritance' actually copies the base stuff to the current
 	-- so that would be useless
 
-	gm.JBT_PlayerStepSoundTime = gm.JBT_PlayerStepSoundTime or gm.PlayerStepSoundTime
+	gm.JBT_PlayerStepSoundTime = gm.JBT_PlayerStepSoundTime or gm.PlayerStepSoundTime or function() end
 	function gm:PlayerStepSoundTime(ply, stepType, walking)
 		if not JBT.PlyNeedsDelta(ply) then
 			return self:JBT_PlayerStepSoundTime(ply, stepType, walking)
@@ -182,7 +182,7 @@ local function gmDetour()
 		return stepTime
 	end
 
-	gm.JBT_UpdateAnimation = gm.JBT_UpdateAnimation or gm.UpdateAnimation
+	gm.JBT_UpdateAnimation = gm.JBT_UpdateAnimation or gm.UpdateAnimation or function() end
 	function gm:UpdateAnimation(ply, vel, maxSeqGroundSpeed)
 		self:JBT_UpdateAnimation(ply, vel, maxSeqGroundSpeed)
 
@@ -211,7 +211,7 @@ local function gmDetour()
 		ply:SetPlaybackRate(rate)
 	end
 
-	gm.JBT_CalcMainActivity = gm.JBT_CalcMainActivity or gm.CalcMainActivity
+	gm.JBT_CalcMainActivity = gm.JBT_CalcMainActivity or gm.CalcMainActivity or function() end
 	function gm:CalcMainActivity(ply, vel)
 		local ideal, override = self:JBT_CalcMainActivity(ply, vel)
 

@@ -3,6 +3,7 @@ local superadmin = CreateConVar("jbt_adminonly_is_superadminonly", "0", FCVAR_NO
 local defaultHeight = 72
 local defaultCrouchingHeight = 36
 local defaultWidth = 32
+local defaultStatValue = 100
 
 -- uses hull height to calculate size with hull width constraining the result
 function JBT.PlyScale(ply)
@@ -53,6 +54,21 @@ function JBT.GetNearestPoint(ent, point)
 	newPoint.z = math.Clamp(newPoint.z, mins.z, maxs.z)
 
 	return ent:LocalToWorld(newPoint)
+end
+
+-- if something tries ply:SetMaxHealth(ply:GetMaxHealth() + 1), we need to account for it
+function JBT.RelativeStatSetFix(ply, stat)
+	return ply["JBT_Get" .. stat]
+end
+function JBT.RelativeStatGetFix(ply, stat)
+	local var = "JBT_Get" .. stat
+
+	ply[var] = true
+	timer.Create(var .. "_" .. ply:UserID(), 0, 1, function()
+		if not IsValid(ply) then return end
+
+		ply[var] = nil
+	end)
 end
 
 timer.Create("JBT_CheckSizeChange", 0.5, 0, function()
