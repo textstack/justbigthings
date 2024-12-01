@@ -1,5 +1,91 @@
+JBT = JBT or {}
+local JBT = JBT
+
 local enable = CreateConVar("jbt_bigmass_enabled", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big mass module", 0, 1)
 local power = CreateConVar("jbt_bigmass_pow", "2", FCVAR_NOTIFY + FCVAR_SERVER_CAN_EXECUTE, "The mathematical power for how player mass scales with size", 1, 3)
+
+JBT.FEET_MIN_PITCH = 45
+JBT.FEET_MAX_SNDLEVEL = 100
+JBT.FEET_BIG = 3
+JBT.FEET_HUGE = 8
+JBT.FEET_NO_OVERRIDE = { "ladder", "wade", "slosh" }
+JBT.FOOTSTEP_SOUNDS = {
+	{
+		mat = { "glass" },
+		sounds = {
+			"physics/glass/glass_sheet_impact_hard1.wav",
+			"physics/glass/glass_sheet_impact_hard2.wav",
+			"physics/glass/glass_sheet_impact_hard3.wav"
+		}
+	},
+	{
+		mat = { "wood" },
+		sounds = {
+			"physics/wood/wood_box_impact_hard1.wav",
+			"physics/wood/wood_box_impact_hard2.wav",
+			"physics/wood/wood_box_impact_hard3.wav",
+			"physics/wood/wood_box_impact_hard4.wav",
+			"physics/wood/wood_box_impact_hard5.wav",
+			"physics/wood/wood_box_impact_hard6.wav"
+		}
+	},
+	{
+		mat = { "rubber" },
+		sounds = {
+			"physics/rubber/rubber_tire_impact_hard1.wav",
+			"physics/rubber/rubber_tire_impact_hard2.wav",
+			"physics/rubber/rubber_tire_impact_hard3.wav"
+		}
+	},
+	{
+		mat = { "plaster" },
+		sounds = {
+			"physics/plaster/drywall_impact_hard1.wav",
+			"physics/plaster/drywall_impact_hard2.wav",
+			"physics/plaster/drywall_impact_hard3.wav"
+		}
+	},
+	{
+		mat = { "chainlink" },
+		sounds = {
+			"physics/metal/metal_chainlink_impact_hard1.wav",
+			"physics/metal/metal_chainlink_impact_hard2.wav",
+			"physics/metal/metal_chainlink_impact_hard3.wav",
+		}
+	},
+	{
+		mat = { "metalgrate" },
+		sounds = {
+			"physics/metal/metal_grate_impact_hard1.wav",
+			"physics/metal/metal_grate_impact_hard2.wav",
+			"physics/metal/metal_grate_impact_hard3.wav"
+		}
+	},
+	{
+		mat = { "metal", "duct" },
+		sounds = {
+			"physics/metal/metal_barrel_impact_hard1.wav",
+			"physics/metal/metal_barrel_impact_hard2.wav",
+			"physics/metal/metal_barrel_impact_hard3.wav"
+		}
+	},
+	{
+		mat = { "grass", "sand", "dirt", "snow", "gravel" },
+		sounds = {
+			"physics/flesh/flesh_impact_hard1.wav",
+			"physics/flesh/flesh_impact_hard2.wav",
+			"physics/flesh/flesh_impact_hard3.wav",
+			"physics/flesh/flesh_impact_hard4.wav",
+			"physics/flesh/flesh_impact_hard5.wav",
+			"physics/flesh/flesh_impact_hard6.wav",
+		}
+	},
+	default = {
+		"physics/concrete/rock_impact_hard1.wav",
+		"physics/concrete/rock_impact_hard2.wav",
+		"physics/concrete/rock_impact_hard3.wav"
+	}
+}
 
 -- return mass scaled to appropriate amount
 function JBT.PlyMass(ply, phys)
@@ -8,7 +94,7 @@ function JBT.PlyMass(ply, phys)
 	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return default end
 
 	local scale = JBT.PlyScale(ply)
-	if scale < 1.01 and scale > 0.95 then return default end
+	if scale < JBT.UPPER and scale > JBT.LOWER then return default end
 
 	return math.Round(default * scale ^ power:GetInt(), 2)
 end
@@ -91,7 +177,11 @@ cvars.AddChangeCallback("jbt_bigmass_pow", setEveryone)
 hook.Add("PlayerSpawn", "JBT_BigMass", function(ply)
 	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
 
-	JBT.PlyResyncMass(ply)
+	timer.Create("JBT_SetMass_" .. ply:UserID(), 0.2, 1, function()
+		if not IsValid(ply) or not ply:Alive() then return end
+
+		JBT.PlyResyncMass(ply)
+	end)
 end)
 
 hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
@@ -129,83 +219,52 @@ end
 hook.Add("KeyPress", "JBT_BigMass", crouchFindPhys)
 hook.Add("KeyRelease", "JBT_BigMass", crouchFindPhys)
 
-local sounds = {
-	{
-		mat = { "glass" },
-		sounds = {
-			"physics/glass/glass_sheet_impact_hard1.wav",
-			"physics/glass/glass_sheet_impact_hard2.wav",
-			"physics/glass/glass_sheet_impact_hard3.wav"
-		}
-	},
-	{
-		mat = { "wood" },
-		sounds = {
-			"physics/wood/wood_box_impact_hard1.wav",
-			"physics/wood/wood_box_impact_hard2.wav",
-			"physics/wood/wood_box_impact_hard3.wav",
-			"physics/wood/wood_box_impact_hard4.wav",
-			"physics/wood/wood_box_impact_hard5.wav",
-			"physics/wood/wood_box_impact_hard6.wav"
-		}
-	},
-	{
-		mat = { "rubber" },
-		sounds = {
-			"physics/rubber/rubber_tire_impact_hard1.wav",
-			"physics/rubber/rubber_tire_impact_hard2.wav",
-			"physics/rubber/rubber_tire_impact_hard3.wav"
-		}
-	},
-	{
-		mat = { "plaster" },
-		sounds = {
-			"physics/plaster/drywall_impact_hard1.wav",
-			"physics/plaster/drywall_impact_hard2.wav",
-			"physics/plaster/drywall_impact_hard3.wav"
-		}
-	},
-	{
-		mat = { "chainlink" },
-		sounds = {
-			"physics/metal/metal_chainlink_impact_hard1.wav",
-			"physics/metal/metal_chainlink_impact_hard2.wav",
-			"physics/metal/metal_chainlink_impact_hard3.wav",
-		}
-	},
-	{
-		mat = { "metalgrate" },
-		sounds = {
-			"physics/metal/metal_grate_impact_hard1.wav",
-			"physics/metal/metal_grate_impact_hard2.wav",
-			"physics/metal/metal_grate_impact_hard3.wav"
-		}
-	},
-	{
-		mat = { "metal", "duct" },
-		sounds = {
-			"physics/metal/metal_barrel_impact_hard1.wav",
-			"physics/metal/metal_barrel_impact_hard2.wav",
-			"physics/metal/metal_barrel_impact_hard3.wav"
-		}
-	},
-	{
-		mat = { "grass", "sand", "dirt", "snow", "gravel" },
-		sounds = {
-			"physics/flesh/flesh_impact_hard1.wav",
-			"physics/flesh/flesh_impact_hard2.wav",
-			"physics/flesh/flesh_impact_hard3.wav",
-			"physics/flesh/flesh_impact_hard4.wav",
-			"physics/flesh/flesh_impact_hard5.wav",
-			"physics/flesh/flesh_impact_hard6.wav",
-		}
-	},
-	default = {
-		"physics/concrete/rock_impact_hard1.wav",
-		"physics/concrete/rock_impact_hard2.wav",
-		"physics/concrete/rock_impact_hard3.wav"
-	}
-}
+function JBT.FeetSndLevel(scale)
+	return math.min(30 + scale * 20, JBT.FEET_MAX_SNDLEVEL)
+end
+
+function JBT.FeetPitch(scale)
+	return math.max(100 / (0.75 + scale * 0.25), JBT.FEET_MIN_PITCH)
+end
+
+function JBT.FeetPitchBig(scale)
+	return math.max(120 / (0.9 + scale * 0.1), JBT.FEET_MIN_PITCH)
+end
+
+function JBT.FeetPitchHuge(scale)
+	return math.max(110 / (0.9 + scale * 0.025), JBT.FEET_MIN_PITCH)
+end
+
+function JBT.FeetSound(_, _, _, snd)
+	return snd
+end
+
+function JBT.FeetSoundBig(_, _, _, snd)
+	local bigSound
+	for _, v in ipairs(JBT.FOOTSTEP_SOUNDS) do
+		local match
+		for _, v1 in ipairs(v.mat) do
+			if string.find(snd, v1) then
+				match = true
+				break
+			end
+		end
+
+		if match then
+			bigSound = v.sounds[math.random(#v.sounds)]
+			break
+		end
+	end
+	if not bigSound then
+		bigSound = sounds.default[math.random(#sounds.default)]
+	end
+
+	return bigSound
+end
+
+function JBT.FeetSoundHuge()
+	return "physics/concrete/boulder_impact_hard" .. math.random(4) .. ".wav"
+end
 
 local function gmDetour()
 	if JBT_NOGM then return end
@@ -217,47 +276,23 @@ local function gmDetour()
 		if self:JBT_PlayerFootstep(ply, pos, foot, snd, vol, filter) then return true end
 
 		if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
-		if string.find(snd, "ladder") or string.find(snd, "wade") or string.find(snd, "slosh") then return end
+
+		for _, v in ipairs(JBT.FEET_NO_OVERRIDE) do
+			if string.find(snd, v) then return end
+		end
 
 		local scale = JBT.PlyScale(ply)
-		if scale < 1.01 and scale > 0.95 then return end
+		if scale < JBT.UPPER and scale > JBT.LOWER then return end
 
-		if scale <= 3 then
-			local sndLevel = math.min(30 + scale * 20, 100)
-			local pitch = 100 / (0.75 + scale * 0.25)
-
-			ply:EmitSound(snd, sndLevel, pitch, vol, CHAN_BODY)
-		elseif scale <= 8 then
-			-- stompy
-
-			local bigSound
-			for _, v in ipairs(sounds) do
-				local match
-				for _, v1 in ipairs(v.mat) do
-					if string.find(snd, v1) then
-						match = true
-						break
-					end
-				end
-
-				if match then
-					bigSound = v.sounds[math.random(#v.sounds)]
-					break
-				end
-			end
-			if not bigSound then
-				bigSound = sounds.default[math.random(#sounds.default)]
-			end
-
-			local pitch = math.max(120 / (0.9 + scale * 0.1), 45)
-
-			ply:EmitSound(bigSound, 100, pitch, vol, CHAN_BODY)
-		else
-			-- mega stompy
-
-			local pitch = math.max(110 / (0.9 + scale * 0.025), 45)
-
-			ply:EmitSound("physics/concrete/boulder_impact_hard" .. math.random(4) .. ".wav", 100, pitch, vol, CHAN_BODY)
+		if scale <= JBT.FEET_BIG then
+			ply:EmitSound(JBT.FeetSound(ply, pos, foot, snd, vol, filter),
+					JBT.FeetSndLevel(scale), JBT.FeetPitch(scale), vol, CHAN_BODY)
+		elseif scale <= JBT.FEET_HUGE then -- stompy
+			ply:EmitSound(JBT.FeetSoundBig(ply, pos, foot, snd, vol, filter),
+					JBT.FeetSndLevel(scale), JBT.FeetPitchBig(scale), vol, CHAN_BODY)
+		else -- mega stompy
+			ply:EmitSound(JBT.FeetSoundHuge(ply, pos, foot, snd, vol, filter),
+					JBT.FeetSndLevel(scale), JBT.FeetPitchHuge(scale), vol, CHAN_BODY)
 		end
 
 		return true

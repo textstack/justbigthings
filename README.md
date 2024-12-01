@@ -32,7 +32,7 @@ Garry's Mod addon that adds some tweaks related to big (or small) players
 - `jbt_sitanywhere_bigtrace_small` Whether smaller players get a smaller range for sitanywhere (default 0)
 - `jbt_adminonly_is_superadminonly` Whether 'adminonly' settings should actually be superadmin only (default 0)
 
-### Netvar Overrides (booleans, will bypass convars)
+### NWBool Overrides (false == force reject, nil == ignore, true == accept) (will bypass convars)
 - `JBT_BigUse` Enables big use module on someone
 - `JBT_BigUse_Mass` Enables big use mass mode
 - `JBT_BigUse_Small` Enables big use for small players

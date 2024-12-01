@@ -1,16 +1,21 @@
+JBT = JBT or {}
+local JBT = JBT
+
 local superadmin = CreateConVar("jbt_adminonly_is_superadminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether 'adminonly' settings should actually be superadmin only", 0, 1)
 
-local defaultHeight = 72
-local defaultCrouchingHeight = 36
-local defaultWidth = 32
+JBT.DEFAULT_HEIGHT = 72
+JBT.DEFAULT_CROUCHING_HEIGHT = 36
+JBT.DEFAULT_WIDTH = 32
+JBT.UPPER = 1.01
+JBT.LOWER = 0.95
 
 -- uses hull height to calculate size with hull width constraining the result
 function JBT.PlyScale(ply)
 	local mins, maxs = ply:OBBMins(), ply:OBBMaxs()
 	local xyDiff, zDiff = (maxs.x + maxs.y - mins.x - mins.y) / 2, maxs.z - mins.z
 
-	local zFrac = zDiff / (ply:Crouching() and defaultCrouchingHeight or defaultHeight)
-	local xyFrac = xyDiff / defaultWidth
+	local zFrac = zDiff / (ply:Crouching() and JBT.DEFAULT_CROUCHING_HEIGHT or JBT.DEFAULT_HEIGHT)
+	local xyFrac = xyDiff / JBT.DEFAULT_WIDTH
 
 	return zFrac * math.min(xyFrac / zFrac, 1)
 end
@@ -37,7 +42,11 @@ function JBT.HasEnabled(ply, ...)
 	local nwPass
 	for _, v in ipairs({...}) do
 		if type(v) == "string" then
-			if not ply:GetNWBool(v) then
+			local val = ply:GetNWBool(v, -1)
+
+			if val == false then
+				return false
+			elseif val == -1 then
 				nwPass = false
 			elseif nwPass == nil then
 				nwPass = true
@@ -56,7 +65,11 @@ end
 
 -- determines whether admin only mode should apply and how that affects the player
 function JBT.AdminOnlyCheck(ply, convar, perm, netvar)
-	if netvar and ply:GetNWBool(netvar) then return true end
+	if netvar then
+		local val = ply:GetNWBool(netvar, -1)
+		if val == true then return true end
+		if val == false then return false end
+	end
 
 	if convar:GetBool() and not JBT.HasPermission(ply, "jbt_biguse") then return false end
 

@@ -1,3 +1,6 @@
+JBT = JBT or {}
+local JBT = JBT
+
 local enable = CreateConVar("jbt_bigstats_enabled", "0", FCVAR_NOTIFY + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big stats module", 0, 1)
 local adminOnly = CreateConVar("jbt_bigstats_adminonly", "0", FCVAR_NOTIFY + FCVAR_SERVER_CAN_EXECUTE, "Whether stats scaling only affects admins", 0, 1)
 local health = CreateConVar("jbt_bigstats_health", "1", FCVAR_NOTIFY + FCVAR_SERVER_CAN_EXECUTE, "Whether bigger players get more health", 0, 1)
@@ -5,8 +8,16 @@ local armor = CreateConVar("jbt_bigstats_armor", "0", FCVAR_NOTIFY + FCVAR_SERVE
 local speed = CreateConVar("jbt_bigstats_speed", "1", FCVAR_NOTIFY + FCVAR_SERVER_CAN_EXECUTE, "Whether bigger players get more speed", 0, 1)
 local smallMode = CreateConVar("jbt_bigstats_small", "1", FCVAR_NOTIFY + FCVAR_SERVER_CAN_EXECUTE, "Whether stats scaling affects small players too", 0, 1)
 
-local statRound = 5
-local defaultStatValue = 100
+JBT.STAT_ROUND = 5
+JBT.DEFAULT_STAT_VALUE = 100
+JBT.SPEED_STATS = {
+	"CrouchedWalkSpeed",
+	"LadderClimbSpeed",
+	"RunSpeed",
+	"SlowWalkSpeed",
+	"WalkSpeed",
+	"JumpPower"
+}
 
 -- return number scaled by the appropriate amount
 function JBT.PlyStat(ply, default, sqrt)
@@ -14,9 +25,9 @@ function JBT.PlyStat(ply, default, sqrt)
 	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_bigstats", "JBT_BigStats") then return default end
 
 	local scale = JBT.PlyScale(ply)
-	if scale < 1.01 then
+	if scale < JBT.UPPER then
 		if not JBT.HasEnabled(ply, smallMode, "JBT_BigStats_Small") then return default end
-		if scale > 0.95 then return default end
+		if scale > JBT.LOWER then return default end
 	end
 
 	local max
@@ -25,7 +36,7 @@ function JBT.PlyStat(ply, default, sqrt)
 		return math.max(math.Round(max), 0)
 	else
 		max = scale * default
-		return math.max(math.Round(max / statRound) * statRound, statRound)
+		return math.max(math.Round(max / JBT.STAT_ROUND) * JBT.STAT_ROUND, JBT.STAT_ROUND)
 	end
 end
 
@@ -37,7 +48,7 @@ function JBT.PlyOriginalStat(ply, stat, default)
 	local getFunc = ply["Get" .. stat]
 	if getFunc then return getFunc(ply) end
 
-	return default or defaultStatValue, true
+	return default or JBT.DEFAULT_STAT_VALUE, true
 end
 
 -- reapply "original" amount to get the rescaled amount
@@ -125,16 +136,7 @@ function PLAYER:GetMaxArmor()
 	return self:JBT_GetMaxArmor()
 end
 
-local speedStats = {
-	"CrouchedWalkSpeed",
-	"LadderClimbSpeed",
-	"RunSpeed",
-	"SlowWalkSpeed",
-	"WalkSpeed",
-	"JumpPower"
-}
-
-for _, stat in ipairs(speedStats) do
+for _, stat in ipairs(JBT.SPEED_STATS) do
 	local func = "Set" .. stat
 	local oldFunc = "JBT_" .. func
 

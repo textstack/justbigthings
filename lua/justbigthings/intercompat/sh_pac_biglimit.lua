@@ -1,3 +1,6 @@
+JBT = JBT or {}
+local JBT = JBT
+
 local enable = CreateConVar("jbt_pac_biglimit_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the pac size limit module", 0, 1)
 local adminOnly = CreateConVar("jbt_pac_biglimit_adminonly", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether the modified size limit is for admins only", 0, 1)
 local amount = CreateConVar("jbt_pac_biglimit_max", "100", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "How much the pac size max is modified", 0.01, 1000)

@@ -1,17 +1,20 @@
+JBT = JBT or {}
+local JBT = JBT
+
 local personalEnable
 if CLIENT then
 	personalEnable = CreateClientConVar("jbt_cl_bigdelta", "1", true, true, "Whether your movement animations sync properly with scale (per-player)", 0, 2)
 end
 local enable = CreateConVar("jbt_bigdelta_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big delta module", 0, 1)
 
-local minimumMovingSpeed = 0.5
-local speedThatDoesntDoTheStupidIdleThing = 25
-local calcIdealsToOverride = {
+JBT.MINIMUM_MOVING_SPEED = 0.5
+JBT.SPEED_THAT_DOESNT_DO_THE_IDLE_THING = 25
+JBT.CALC_IDEALS_TO_OVERRIDE = {
 	[ACT_MP_STAND_IDLE] = true,
 	[ACT_MP_RUN] = true,
 	[ACT_MP_WALK] = true
 }
-local unarmed = {
+JBT.UNARMED_ANIMS = {
 	run_all_01 = true,
 	walk_all = true,
 	cwalk_all = true
@@ -34,7 +37,7 @@ function JBT.EstimateYaw(ply, vel)
 	ply.JBT_GaitYaw = ply.JBT_GaitYaw or 0
 
 	local len = vel:Length2D()
-	if len > minimumMovingSpeed then
+	if len > JBT.MINIMUM_MOVING_SPEED then
 		ply.JBT_GaitYaw = math.atan2(vel.y, vel.x)
 		ply.JBT_GaitYaw = math.deg(ply.JBT_GaitYaw)
 	end
@@ -49,7 +52,7 @@ function JBT.CalcMovementPlaybackRate(ply, vel, maxSeqGroundSpeed, scale)
 	local len = vel:Length2D()
 	local playbackRate = 0.01
 
-	if len > speedThatDoesntDoTheStupidIdleThing then
+	if len > JBT.SPEED_THAT_DOESNT_DO_THE_IDLE_THING then
 		if maxSeqGroundSpeed < 0.001 then
 			playbackRate = 0.01
 		else
@@ -59,7 +62,7 @@ function JBT.CalcMovementPlaybackRate(ply, vel, maxSeqGroundSpeed, scale)
 	end
 
 	-- the unarmed move sequence is just so weird
-	if unarmed[ply:GetSequenceName(ply:GetSequence())] and len < 120 * math.sqrt(scale) then
+	if JBT.UNARMED_ANIMS[ply:GetSequenceName(ply:GetSequence())] and len < 120 * math.sqrt(scale) then
 		playbackRate = math.max(playbackRate, 1.78 - math.atan(scale))
 
 		if len < 50 then
@@ -122,7 +125,7 @@ hook.Add("UpdateAnimation", "JBT_BigDelta", function(ply, vel, maxSeqGroundSpeed
 	if not JBT.PlyNeedsDelta(ply) then return end
 
 	local scale = JBT.PlyScale(ply)
-	if scale < 1.01 then return end
+	if scale < JBT.UPPER then return end
 
 	local yaw = JBT.EstimateYaw(ply, vel) - ply:EyeAngles().yaw
 	local playbackRate = JBT.CalcMovementPlaybackRate(ply, vel, maxSeqGroundSpeed, scale)
@@ -150,7 +153,7 @@ local function gmDetour()
 		end
 
 		local scale = JBT.PlyScale(ply)
-		if scale < 1.01 and scale > 0.95 then
+		if scale < JBT.UPPER and scale > JBT.LOWER then
 			return self:JBT_PlayerStepSoundTime(ply, stepType, walking)
 		end
 
@@ -176,7 +179,7 @@ local function gmDetour()
 		end
 
 		--[[
-		if scale <= 0.95 then
+		if scale <= JBT.LOWER then
 			return stepTime * (0.33 + scale * 0.66)
 		end
 		--]]
@@ -192,7 +195,7 @@ local function gmDetour()
 		if not JBT.PlyNeedsDelta(ply) then return end
 
 		local scale = JBT.PlyScale(ply)
-		if scale > 0.95 then return end
+		if scale > JBT.LOWER then return end
 
 		local len = vel:Length()
 		local movement = 1.0
@@ -222,7 +225,7 @@ local function gmDetour()
 		if not JBT.PlyNeedsDelta(ply) then return ideal, override end
 		if ply:InVehicle() then return ideal, override end
 		if ply.m_bWasNoclipping then return ideal, override end
-		if not calcIdealsToOverride[ply.CalcIdeal] then return ideal, override end
+		if not JBT.CALC_IDEALS_TO_OVERRIDE[ply.CalcIdeal] then return ideal, override end
 
 		local scale = JBT.PlyScale(ply)
 		ply.CalcSeqOverride = -1
