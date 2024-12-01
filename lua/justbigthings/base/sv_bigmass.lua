@@ -191,16 +191,11 @@ hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
 end)
 
 -- players have TWO physics objects for both crouching and standing
-local function crouchFindPhys(ply, key)
+function JBT.CrouchFindPhys(ply, key)
 	if key ~= IN_DUCK then return end
 
 	timer.Create("JBT_Ducking_" .. ply:UserID(), 0, 1, function()
 		if not IsValid(ply) then return end
-
-		local set
-		if not IsValid(ply.JBT_Phys) or not IsValid(ply.JBT_CPhys) then
-			set = true
-		end
 
 		if ply:Crouching() then
 			ply.JBT_CPhys = ply:GetPhysicsObject()
@@ -209,15 +204,13 @@ local function crouchFindPhys(ply, key)
 		end
 
 		if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
-		if not set then return end
-		if not IsValid(ply.JBT_Phys) or not IsValid(ply.JBT_CPhys) then return end
 
 		JBT.PlyResyncMass(ply)
 	end)
 end
 
-hook.Add("KeyPress", "JBT_BigMass", crouchFindPhys)
-hook.Add("KeyRelease", "JBT_BigMass", crouchFindPhys)
+hook.Add("KeyPress", "JBT_BigMass", JBT.CrouchFindPhys)
+hook.Add("KeyRelease", "JBT_BigMass", JBT.CrouchFindPhys)
 
 function JBT.FeetSndLevel(scale)
 	return math.min(30 + scale * 20, JBT.FEET_MAX_SNDLEVEL)
