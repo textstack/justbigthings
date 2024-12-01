@@ -25,7 +25,7 @@ local function bigTrace()
 		end
 
 		local scale = JBT.PlyScale(ply)
-		if scale < JBT.UPPER and not JBT.HasEnabled(ply, smallMode, "JBT_SitAnywhere_BigTrace_Small") then
+		if scale < JBT.UPPER and not JBT.HasEnabled(ply, enable, smallMode, "JBT_SitAnywhere_BigTrace", "JBT_SitAnywhere_BigTrace_Small") then
 			scale = 1
 		end
 

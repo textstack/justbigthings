@@ -28,7 +28,7 @@ function JBT.IsUsable(ent, required, scale, ply)
 	if bit.band(caps, JBT.USABLE_ENUMS) ~= 0 then return true end
 
 	if not IsValid(ply) then return false end
-	if not JBT.HasEnabled(ply, enableMass, "JBT_BigUse_Mass") then return false end
+	if not JBT.HasEnabled(ply, enable, enableMass, "JBT_BigUse", "JBT_BigUse_Mass") then return false end
 	if ent:IsPlayer() then return false end
 	if ent:HasSpawnFlags(SF_PHYSPROP_PREVENT_PICKUP) then return false end
 

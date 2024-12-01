@@ -256,7 +256,7 @@ function JBT.FeetSoundBig(_, _, _, snd)
 		end
 	end
 	if not bigSound then
-		bigSound = sounds.default[math.random(#sounds.default)]
+		bigSound = JBT.FOOTSTEP_SOUNDS.default[math.random(#JBT.FOOTSTEP_SOUNDS.default)]
 	end
 
 	return bigSound
