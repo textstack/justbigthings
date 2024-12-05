@@ -52,7 +52,15 @@ function JBT.PlyOriginalStat(ply, stat, default)
 end
 
 -- reapply "original" amount to get the rescaled amount
-function JBT.PlyResyncStat(ply, stat)
+function JBT.PlyResyncStat(ply, stat, noloop)
+	if stat == "Speed" and not noloop then
+		for _, stat1 in ipairs(JBT.SPEED_STATS) do
+			JBT.PlyResyncStat(ply, stat1)
+		end
+
+		return
+	end
+
 	local amount = JBT.PlyOriginalStat(ply, stat)
 	ply["Set" .. stat](ply, amount, true)
 end
@@ -170,9 +178,7 @@ end
 
 local function setAllSpeeds()
 	for _, ply in player.Iterator() do
-		for _, stat in ipairs(JBT.SPEED_STATS) do
-			JBT.PlyResyncStat(ply, stat)
-		end
+		JBT.PlyRefracStat(ply, "Speed")
 	end
 end
 
@@ -207,9 +213,7 @@ hook.Add("PlayerSpawn", "JBT_BigStats", function(ply, transition)
 	timer.Create("JBT_SetStats_" .. ply:UserID(), 0.2, 1, function()
 		if not IsValid(ply) or not ply:Alive() then return end
 
-		for _, stat in ipairs(JBT.SPEED_STATS) do
-			JBT.PlyResyncStat(ply, stat)
-		end
+		JBT.PlyRefracStat(ply, "Speed")
 
 		if transition then return end
 
@@ -222,10 +226,7 @@ hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
 	if not JBT.HasEnabled(ply, enable, "JBT_BigStats") then return end
 	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_bigstats", "JBT_BigStats") then return end
 
-	for _, stat in ipairs(JBT.SPEED_STATS) do
-		JBT.PlyResyncStat(ply, stat)
-	end
-
+	JBT.PlyRefracStat(ply, "Speed")
 	JBT.PlyRefracStat(ply, "Health")
 	JBT.PlyRefracStat(ply, "Armor")
 end)
