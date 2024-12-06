@@ -28,7 +28,7 @@ function JBT.IsUsable(ent, required, scale, ply)
 	if bit.band(caps, JBT.USABLE_ENUMS) ~= 0 then return true end
 
 	if not IsValid(ply) then return false end
-	if not JBT.HasEnabled(ply, enable, enableMass, "JBT_BigUse", "JBT_BigUse_Mass") then return false end
+	if not JBT.HasEnabled(ply, enableMass, "JBT_BigUse_Mass") then return false end
 	if ent:IsPlayer() then return false end
 	if ent:HasSpawnFlags(SF_PHYSPROP_PREVENT_PICKUP) then return false end
 
@@ -149,7 +149,8 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 end)
 
 hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
-	if not JBT.HasEnabled(ply, enable, enableMass, "JBT_BigUse_Mass", "JBT_BigUse") then return end
+	if not JBT.HasEnabled(ply, enable, "JBT_BigUse") then return end
+	if not JBT.HasEnabled(ply, enableMass, "JBT_BigUse_Mass") then return end
 	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_biguse", "JBT_BigUse") then return end
 
 	local scale = JBT.PlyScale(ply)
@@ -218,7 +219,9 @@ hook.Add("OnPlayerPhysicsDrop", "JBT_BigUse", function(ply, ent)
 end)
 
 hook.Add("AllowPlayerPickup", "JBT_BigUse", function(ply, ent)
-	if not JBT.HasEnabled(ply, enable, enableMass, smallMode, "JBT_BigUse", "JBT_BigUse_Small", "JBT_BigUse_Mass") then return end
+	if not JBT.HasEnabled(ply, enable, "JBT_BigUse") then return end
+	if not JBT.HasEnabled(ply, enableMass, "JBT_BigUse_Mass") then return end
+	if not JBT.HasEnabled(ply, smallMode, "JBT_BigUse_Small") then return end
 	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_biguse", "JBT_BigUse") then return end
 
 	local scale = JBT.PlyScale(ply)
