@@ -178,7 +178,7 @@ end
 
 local function setAllSpeeds()
 	for _, ply in player.Iterator() do
-		JBT.PlyRefracStat(ply, "Speed")
+		JBT.PlyResyncStat(ply, "Speed")
 	end
 end
 
@@ -213,7 +213,7 @@ hook.Add("PlayerSpawn", "JBT_BigStats", function(ply, transition)
 	timer.Create("JBT_SetStats_" .. ply:UserID(), 0.2, 1, function()
 		if not IsValid(ply) or not ply:Alive() then return end
 
-		JBT.PlyRefracStat(ply, "Speed")
+		JBT.PlyResyncStat(ply, "Speed")
 
 		if transition then return end
 
@@ -226,7 +226,7 @@ hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
 	if not JBT.HasEnabled(ply, enable, "JBT_BigStats") then return end
 	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_bigstats", "JBT_BigStats") then return end
 
-	JBT.PlyRefracStat(ply, "Speed")
+	JBT.PlyResyncStat(ply, "Speed")
 	JBT.PlyRefracStat(ply, "Health")
 	JBT.PlyRefracStat(ply, "Armor")
 end)
