@@ -50,3 +50,4 @@ Garry's Mod addon that adds some tweaks related to big (or small) players
 - `jbt_pac_biglimit` Override the adminonly setting of the pac size limit module
 - `jbt_sitanywhere_bigtrace` Override the adminonly setting of the sitanywhere big trace module
 - `jbt_biguse` Override the adminonly setting of the big use module
+- `jbt_bigstats` Override the adminonly setting of the big stats module
