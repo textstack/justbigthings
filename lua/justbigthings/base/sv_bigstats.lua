@@ -90,6 +90,13 @@ function JBT.PlyRefracStat(ply, stat)
 	setFunc(ply, math.floor(frac * newMax))
 end
 
+-- quick function to do all the resyncs and refracs needed
+function JBT.PlyResyncAllStats(ply)
+	JBT.PlyResyncStat(ply, "Speed")
+	JBT.PlyRefracStat(ply, "Health")
+	JBT.PlyRefracStat(ply, "Armor")
+end
+
 local ENTITY = FindMetaTable("Entity")
 
 ENTITY.JBT_SetMaxHealth = ENTITY.JBT_SetMaxHealth or ENTITY.SetMaxHealth
@@ -226,7 +233,5 @@ hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
 	if not JBT.HasEnabled(ply, enable, "JBT_BigStats") then return end
 	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_bigstats", "JBT_BigStats") then return end
 
-	JBT.PlyResyncStat(ply, "Speed")
-	JBT.PlyRefracStat(ply, "Health")
-	JBT.PlyRefracStat(ply, "Armor")
+	JBT.PlyResyncAllStats(ply)
 end)
