@@ -1,11 +1,11 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local enable = CreateConVar("jbt_biguse_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big use module", 0, 1)
-local adminOnly = CreateConVar("jbt_biguse_adminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big usage is for admins only", 0, 1)
-local enableMass = CreateConVar("jbt_biguse_mass", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big players can carry heavier props", 0, 1)
-local powerMass = CreateConVar("jbt_biguse_mass_pow", "2", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "The mathematical power of the amount of mass big players can carry", 1, 3)
-local smallMode = CreateConVar("jbt_biguse_small", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether smaller players get a smaller range / mass limit for pickup", 0, 1)
+local enable = CreateConVar("jbt_biguse_enabled", "1", JBT.SHARED_FCVARS, "Whether to enable the big use module", 0, 1)
+local adminOnly = CreateConVar("jbt_biguse_adminonly", "0", JBT.SHARED_FCVARS, "Whether big usage is for admins only", 0, 1)
+local enableMass = CreateConVar("jbt_biguse_mass", "1", JBT.SHARED_FCVARS, "Whether big players can carry heavier props", 0, 1)
+local powerMass = CreateConVar("jbt_biguse_mass_pow", "2", JBT.SHARED_FCVARS, "The mathematical power of the amount of mass big players can carry", 1, 3)
+local smallMode = CreateConVar("jbt_biguse_small", "0", JBT.SHARED_FCVARS, "Whether smaller players get a smaller range / mass limit for pickup", 0, 1)
 
 JBT.USABLE_ENUMS = 0x00000010 + 0x00000020 + 0x00000040 + 0x00000080
 JBT.DEFAULT_MAX_MASS = 35

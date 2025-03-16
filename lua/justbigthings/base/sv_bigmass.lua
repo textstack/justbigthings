@@ -1,8 +1,8 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local enable = CreateConVar("jbt_bigmass_enabled", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big mass module", 0, 1)
-local power = CreateConVar("jbt_bigmass_pow", "2", FCVAR_NOTIFY + FCVAR_SERVER_CAN_EXECUTE, "The mathematical power for how player mass scales with size", 1, 3)
+local enable = CreateConVar("jbt_bigmass_enabled", "0", JBT.SHARED_FCVARS, "Whether to enable the big mass module", 0, 1)
+local power = CreateConVar("jbt_bigmass_pow", "2", JBT.SERVER_FCVARS, "The mathematical power for how player mass scales with size", 1, 3)
 
 JBT.FEET_MIN_PITCH = 45
 JBT.FEET_MAX_SNDLEVEL = 100

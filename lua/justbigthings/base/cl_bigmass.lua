@@ -1,7 +1,7 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local enable = CreateConVar("jbt_bigmass_enabled", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big mass module", 0, 1)
+local enable = CreateConVar("jbt_bigmass_enabled", "0", JBT.SHARED_FCVARS, "Whether to enable the big mass module", 0, 1)
 
 local function gmDetour()
 	if JBT_NOGM then return end

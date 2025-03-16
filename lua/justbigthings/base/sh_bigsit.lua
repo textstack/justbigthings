@@ -1,7 +1,7 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local enable = CreateConVar("jbt_bigsit_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big sit module", 0, 1)
+local enable = CreateConVar("jbt_bigsit_enabled", "1", JBT.SHARED_FCVARS, "Whether to enable the big sit module", 0, 1)
 
 if SERVER then return end
 
