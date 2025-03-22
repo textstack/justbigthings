@@ -1,5 +1,5 @@
-JBT.SETTINGS_NET_SIZE = 8
-JBT.SETTINGS_OPTION_NET_SIZE = 8
+JBT.DefaultSettingsCC = JBT.DefaultSettingsCC or {}
+
 JBT.SETTINGS_FILE = "jbt_settings.json"
 JBT.SETTINGS_NET_STRING = "jbtSettings"
 
@@ -16,12 +16,15 @@ end
 
 -- set a server setting, will autoconvert non-integer values
 function JBT.SetSetting(setting, value)
-	local newVal
-	if type(value) == "boolean" then
-		newVal = value and 1 or 0
-	else
-		newVal = tonumber(value)
-		if not newVal then return end
+	local newVal = JBT.ToSetting(value)
+	if newVal == nil then return end
+
+	local oldVal = JBT.Settings[setting]
+	if oldVal ~= newVal then
+		local callback = JBT.DefaultSettingsCC[setting]
+		if callback then
+			callback(oldVal, newVal)
+		end
 	end
 
 	JBT.Settings[setting] = newVal
@@ -32,15 +35,6 @@ function JBT.SetSetting(setting, value)
 	net.WriteString(setting)
 	net.WriteInt(newVal, JBT.SETTINGS_OPTION_NET_SIZE)
 	net.Broadcast()
-end
-
--- get a server setting, will return the fallback if nill and return a boolean if isBool is true
-function JBT.GetSetting(setting, fallback, isBool)
-	local value = JBT.Settings[setting]
-	if value == nil then return fallback end
-
-	if isBool then return value ~= 0 end
-	return value
 end
 
 concommand.Add("jbt_set_setting", function(ply, _, args)

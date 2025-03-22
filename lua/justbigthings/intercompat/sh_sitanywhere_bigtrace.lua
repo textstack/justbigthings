@@ -1,10 +1,7 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local enable = CreateConVar("jbt_sitanywhere_bigtrace_enabled", "1", JBT.SHARED_FCVARS, "Whether to enable the sit anywhere module", 0, 1)
-local adminOnly = CreateConVar("jbt_sitanywhere_bigtrace_adminonly", "0", JBT.SHARED_FCVARS, "Whether sitanywhere trace scaling should only be for admins", 0, 1)
 local distance = CreateConVar("jbt_sitanywhere_bigtrace_distance", "100", JBT.SHARED_FCVARS, "What the base distance check should be for sitting", 0, 9999)
-local smallMode = CreateConVar("jbt_sitanywhere_bigtrace_small", "0", JBT.SHARED_FCVARS, "Whether smaller players get a smaller range for sitanywhere", 0, 1)
 
 local function bigTrace()
 	if not SitAnywhere then return end
@@ -16,16 +13,12 @@ local function bigTrace()
 
 	SitAnywhere.JBT_ValidSitTrace = SitAnywhere.JBT_ValidSitTrace or SitAnywhere.ValidSitTrace
 	function SitAnywhere.ValidSitTrace(ply, EyeTrace)
-		if not JBT.HasEnabled(ply, enable, "JBT_SitAnywhere_BigTrace") then
-			return SitAnywhere.JBT_ValidSitTrace(ply, EyeTrace)
-		end
-
-		if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_sitanywhere_bigtrace", "JBT_SitAnywhere_BigTrace") then
+		if not JBT.GetPersonalSetting(ply, "sitanywhere_bigtrace") then
 			return SitAnywhere.JBT_ValidSitTrace(ply, EyeTrace)
 		end
 
 		local scale = JBT.PlyScale(ply)
-		if scale < JBT.UPPER and not JBT.HasEnabled(ply, smallMode, "JBT_SitAnywhere_BigTrace_Small") then
+		if scale < JBT.UPPER and not JBT.GetPersonalSetting(ply, "sitanywhere_bigtrace_small") then
 			scale = 1
 		end
 
@@ -70,3 +63,6 @@ timer.Create("JBT_SitAnywhere", 1, 60, function()
 		timer.Remove("JBT_SitAnywhere")
 	end
 end)
+
+JBT.SetSettingDefault("sitanywhere_bigtrace", true)
+JBT.SetSettingDefault("sitanywhere_bigtrace_small", false)

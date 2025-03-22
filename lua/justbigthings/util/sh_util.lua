@@ -1,8 +1,6 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local superadmin = CreateConVar("jbt_adminonly_is_superadminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether 'adminonly' settings should actually be superadmin only", 0, 1)
-
 JBT.DEFAULT_HEIGHT = 72
 JBT.DEFAULT_CROUCHING_HEIGHT = 36
 JBT.DEFAULT_WIDTH = 32
@@ -27,55 +25,13 @@ function JBT.HasPermission(ply, permission)
 		return true
 	end
 
-	if superadmin:GetBool() then
+	if JBT.GetSettingBool("admin_is_superadmin") then
 		if ply:IsSuperAdmin() then return true end
 	else
 		if ply:IsAdmin() then return true end
 	end
 
 	return false
-end
-
--- check if module is enabled for the player
-function JBT.HasEnabled(ply, ...)
-	if not IsValid(ply) then return false end
-
-	local pass
-	local nwPass
-	for _, v in ipairs({...}) do
-		if type(v) == "string" then
-			local val = ply:GetNWBool(v, -1)
-
-			if val == false then
-				return false
-			elseif val == -1 then
-				nwPass = false
-			elseif nwPass == nil then
-				nwPass = true
-			end
-		else
-			if not v:GetBool() then
-				pass = false
-			elseif pass == nil then
-				pass = true
-			end
-		end
-	end
-
-	return pass or nwPass or false
-end
-
--- determines whether admin only mode should apply and how that affects the player
-function JBT.AdminOnlyCheck(ply, convar, perm, netvar)
-	if netvar then
-		local val = ply:GetNWBool(netvar, -1)
-		if val == true then return true end
-		if val == false then return false end
-	end
-
-	if convar:GetBool() and not JBT.HasPermission(ply, "jbt_biguse") then return false end
-
-	return true
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseplayer_shared.cpp#L1051-L1066
@@ -102,6 +58,19 @@ function JBT.GetNearestPoint(ent, point)
 	newPoint.z = math.Clamp(newPoint.z, mins.z, maxs.z)
 
 	return ent:LocalToWorld(newPoint)
+end
+
+-- converts a value to something storable into settings
+function JBT.ToSetting(value)
+	local newVal
+	if type(value) == "boolean" then
+		newVal = value and 1 or 0
+	else
+		newVal = tonumber(value)
+		if not newVal then return end
+	end
+
+	return newVal
 end
 
 -- if something tries ply:SetMaxHealth(ply:GetMaxHealth() + 1), we need to account for it

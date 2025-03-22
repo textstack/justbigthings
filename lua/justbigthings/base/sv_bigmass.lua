@@ -1,7 +1,6 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local enable = CreateConVar("jbt_bigmass_enabled", "0", JBT.SHARED_FCVARS, "Whether to enable the big mass module", 0, 1)
 local power = CreateConVar("jbt_bigmass_pow", "2", JBT.SERVER_FCVARS, "The mathematical power for how player mass scales with size", 1, 3)
 
 JBT.FEET_MIN_PITCH = 45
@@ -91,7 +90,7 @@ JBT.FOOTSTEP_SOUNDS = {
 function JBT.PlyMass(ply, phys)
 	local default = JBT.PlyOriginalMass(ply, phys)
 
-	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return default end
+	if not JBT.GetPersonalSetting(ply, "bigmass") then return default end
 
 	local scale = JBT.PlyScale(ply)
 	if scale < JBT.UPPER and scale > JBT.LOWER then return default end
@@ -126,7 +125,7 @@ function PHYSOBJ:SetMass(mass, nofix)
 		return
 	end
 
-	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then
+	if not JBT.GetPersonalSetting(ply, "bigmass") then
 		self:JBT_SetMass(mass)
 		if IsValid(ply.JBT_Phys) then
 			ply.JBT_Phys:JBT_SetMass(mass)
@@ -158,24 +157,15 @@ end
 PHYSOBJ.JBT_GetMass = PHYSOBJ.JBT_GetMass or PHYSOBJ.GetMass
 function PHYSOBJ:GetMass()
 	local ply = self:GetEntity()
-	if ply:IsPlayer() and JBT.HasEnabled(ply, enable, "JBT_BigMass") then
+	if ply:IsPlayer() and JBT.GetPersonalSetting(ply, "bigmass") then
 		JBT.RelativeStatGetFix(ply, "Mass")
 	end
 
 	return self:JBT_GetMass()
 end
 
-local function setEveryone()
-	for _, ply in player.Iterator() do
-		JBT.PlyResyncMass(ply)
-	end
-end
-
-cvars.AddChangeCallback("jbt_bigmass_enabled", setEveryone)
-cvars.AddChangeCallback("jbt_bigmass_pow", setEveryone)
-
 hook.Add("PlayerSpawn", "JBT_BigMass", function(ply)
-	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
+	if not JBT.GetPersonalSetting(ply, "bigmass") then return end
 
 	timer.Create("JBT_SetMass_" .. ply:UserID(), 0.2, 1, function()
 		if not IsValid(ply) or not ply:Alive() then return end
@@ -185,7 +175,7 @@ hook.Add("PlayerSpawn", "JBT_BigMass", function(ply)
 end)
 
 hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
-	if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
+	if not JBT.GetPersonalSetting(ply, "bigmass") then return end
 
 	JBT.PlyResyncMass(ply)
 end)
@@ -203,7 +193,7 @@ function JBT.CrouchFindPhys(ply, key)
 			ply.JBT_Phys = ply:GetPhysicsObject()
 		end
 
-		if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
+		if not JBT.GetPersonalSetting(ply, "bigmass") then return end
 
 		JBT.PlyResyncMass(ply)
 	end)
@@ -268,7 +258,7 @@ local function gmDetour()
 	function gm:PlayerFootstep(ply, pos, foot, snd, vol, filter)
 		if self:JBT_PlayerFootstep(ply, pos, foot, snd, vol, filter) then return true end
 
-		if not JBT.HasEnabled(ply, enable, "JBT_BigMass") then return end
+		if not JBT.GetPersonalSetting(ply, "bigmass") then return end
 
 		for _, v in ipairs(JBT.FEET_NO_OVERRIDE) do
 			if string.find(snd, v) then return end
@@ -294,3 +284,13 @@ end
 
 hook.Add("PostGamemodeLoaded", "JBT_BigMass", gmDetour)
 if JBT_LOADED then gmDetour() end
+
+local function setEveryone()
+	for _, ply in player.Iterator() do
+		JBT.PlyResyncMass(ply)
+	end
+end
+
+cvars.AddChangeCallback("jbt_bigmass_pow", setEveryone)
+
+JBT.SetSettingDefault("bigmass", false, setEveryone)

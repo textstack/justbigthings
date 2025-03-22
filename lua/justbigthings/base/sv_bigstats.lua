@@ -1,13 +1,6 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local enable = CreateConVar("jbt_bigstats_enabled", "0", JBT.SERVER_FCVARS, "Whether to enable the big stats module", 0, 1)
-local adminOnly = CreateConVar("jbt_bigstats_adminonly", "0", JBT.SERVER_FCVARS, "Whether stats scaling only affects admins", 0, 1)
-local health = CreateConVar("jbt_bigstats_health", "1", JBT.SERVER_FCVARS, "Whether bigger players get more health", 0, 1)
-local armor = CreateConVar("jbt_bigstats_armor", "0", JBT.SERVER_FCVARS, "Whether bigger players get more armor", 0, 1)
-local speed = CreateConVar("jbt_bigstats_speed", "1", JBT.SERVER_FCVARS, "Whether bigger players get more speed", 0, 1)
-local smallMode = CreateConVar("jbt_bigstats_small", "1", JBT.SERVER_FCVARS, "Whether stats scaling affects small players too", 0, 1)
-
 JBT.STAT_ROUND = 5
 JBT.DEFAULT_STAT_VALUE = 100
 JBT.SPEED_STATS = {
@@ -21,12 +14,11 @@ JBT.SPEED_STATS = {
 
 -- return number scaled by the appropriate amount
 function JBT.PlyStat(ply, default, sqrt)
-	if not JBT.HasEnabled(ply, enable, "JBT_BigStats") then return default end
-	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_bigstats", "JBT_BigStats") then return default end
+	if not JBT.GetPersonalSetting(ply, "bigstats") then return default end
 
 	local scale = JBT.PlyScale(ply)
 	if scale < JBT.UPPER then
-		if not JBT.HasEnabled(ply, smallMode, "JBT_BigStats_Small") then return default end
+		if not JBT.GetPersonalSetting(ply, "bigstats_small") then return default end
 		if scale > JBT.LOWER then return default end
 	end
 
@@ -101,7 +93,7 @@ local ENTITY = FindMetaTable("Entity")
 
 ENTITY.JBT_SetMaxHealth = ENTITY.JBT_SetMaxHealth or ENTITY.SetMaxHealth
 function ENTITY:SetMaxHealth(maxHealth, nofix)
-	if not self:IsPlayer() or not JBT.HasEnabled(self, enable, "JBT_BigStats") or not JBT.HasEnabled(self, health, "JBT_BigStats_Health") then
+	if not self:IsPlayer() or not JBT.GetPersonalSetting(self, "bigstats") or not JBT.GetPersonalSetting(self, "bigstats_health") then
 		self:JBT_SetMaxHealth(maxHealth)
 		return
 	end
@@ -117,7 +109,7 @@ end
 
 ENTITY.JBT_GetMaxHealth = ENTITY.JBT_GetMaxHealth or ENTITY.GetMaxHealth
 function ENTITY:GetMaxHealth()
-	if self:IsPlayer() and JBT.HasEnabled(self, health, "JBT_BigStats_Health") then
+	if self:IsPlayer() and JBT.GetPersonalSetting(self, "bigstats_health") then
 		JBT.RelativeStatGetFix(self, "MaxHealth")
 	end
 
@@ -128,7 +120,7 @@ local PLAYER = FindMetaTable("Player")
 
 PLAYER.JBT_SetMaxArmor = PLAYER.JBT_SetMaxArmor or PLAYER.SetMaxArmor
 function PLAYER:SetMaxArmor(maxArmor, nofix)
-	if not JBT.HasEnabled(self, enable, "JBT_BigStats") or not JBT.HasEnabled(self, armor, "JBT_BigStats_Armor") then
+	if not JBT.GetPersonalSetting(self, "bigstats") or not JBT.GetPersonalSetting(self, "bigstats_armor") then
 		self:JBT_SetMaxArmor(maxArmor)
 		return
 	end
@@ -144,7 +136,7 @@ end
 
 PLAYER.JBT_GetMaxArmor = PLAYER.JBT_GetMaxArmor or PLAYER.GetMaxArmor
 function PLAYER:GetMaxArmor()
-	if JBT.HasEnabled(self, armor, "JBT_BigStats_Armor") then
+	if JBT.GetPersonalSetting(self, "bigstats_armor") then
 		JBT.RelativeStatGetFix(self, "MaxArmor")
 	end
 
@@ -157,7 +149,7 @@ for _, stat in ipairs(JBT.SPEED_STATS) do
 
 	PLAYER[oldFunc] = PLAYER[oldFunc] or PLAYER[func]
 	PLAYER[func] = function(self, amount, nofix)
-		if not JBT.HasEnabled(self, enable, "JBT_BigStats") or not JBT.HasEnabled(self, speed, "JBT_BigStats_Speed") then
+		if not JBT.GetPersonalSetting(self, "bigstats") or not JBT.GetPersonalSetting(self, "bigstats_speed") then
 			self[oldFunc](self, amount)
 			return
 		end
@@ -175,13 +167,34 @@ for _, stat in ipairs(JBT.SPEED_STATS) do
 	local oldGetFunc = "JBT_" .. getFunc
 	PLAYER[oldGetFunc] = PLAYER[oldGetFunc] or PLAYER[getFunc]
 	PLAYER[getFunc] = function(self)
-		if JBT.HasEnabled(self, speed, "JBT_BigStats_Speed") then
+		if JBT.GetPersonalSetting(self, "bigstats_speed") then
 			JBT.RelativeStatGetFix(self, stat)
 		end
 
 		return self[oldGetFunc](self)
 	end
 end
+
+hook.Add("PlayerSpawn", "JBT_BigStats", function(ply, transition)
+	if not JBT.GetPersonalSetting(ply, "bigstats") then return end
+
+	timer.Create("JBT_SetStats_" .. ply:UserID(), 0.2, 1, function()
+		if not IsValid(ply) or not ply:Alive() then return end
+
+		JBT.PlyResyncStat(ply, "Speed")
+
+		if transition then return end
+
+		JBT.PlyRefracStat(ply, "Health")
+		JBT.PlyRefracStat(ply, "Armor")
+	end)
+end)
+
+hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
+	if not JBT.GetPersonalSetting(ply, "bigstats") then return end
+
+	JBT.PlyResyncAllStats(ply)
+end)
 
 local function setAllSpeeds()
 	for _, ply in player.Iterator() do
@@ -207,31 +220,8 @@ local function setAll()
 	setAllHealth()
 end
 
-cvars.AddChangeCallback("jbt_bigstats_enabled", setAll)
-cvars.AddChangeCallback("jbt_bigstats_health", setAllHealth)
-cvars.AddChangeCallback("jbt_bigstats_armor", setAllArmor)
-cvars.AddChangeCallback("jbt_bigstats_speed", setAllSpeeds)
-cvars.AddChangeCallback("jbt_bigstats_small", setAll)
-
-hook.Add("PlayerSpawn", "JBT_BigStats", function(ply, transition)
-	if not JBT.HasEnabled(ply, enable, "JBT_BigStats") then return end
-	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_bigstats", "JBT_BigStats") then return end
-
-	timer.Create("JBT_SetStats_" .. ply:UserID(), 0.2, 1, function()
-		if not IsValid(ply) or not ply:Alive() then return end
-
-		JBT.PlyResyncStat(ply, "Speed")
-
-		if transition then return end
-
-		JBT.PlyRefracStat(ply, "Health")
-		JBT.PlyRefracStat(ply, "Armor")
-	end)
-end)
-
-hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
-	if not JBT.HasEnabled(ply, enable, "JBT_BigStats") then return end
-	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_bigstats", "JBT_BigStats") then return end
-
-	JBT.PlyResyncAllStats(ply)
-end)
+JBT.SetSettingDefault("bigstats", false, setAll)
+JBT.SetSettingDefault("bigstats_health", true, setAllHealth)
+JBT.SetSettingDefault("bigstats_armor", false, setAllArmor)
+JBT.SetSettingDefault("bigstats_speed", false, setAllSpeeds)
+JBT.SetSettingDefault("bigstats_small", false, setAll)

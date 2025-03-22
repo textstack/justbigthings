@@ -5,7 +5,6 @@ local personalEnable
 if CLIENT then
 	personalEnable = CreateClientConVar("jbt_cl_bigdelta", "1", true, true, "Whether your movement animations sync properly with scale (per-player)", 0, 2)
 end
-local enable = CreateConVar("jbt_bigdelta_enabled", "1", JBT.SHARED_FCVARS, "Whether to enable the big delta module", 0, 1)
 
 JBT.MINIMUM_MOVING_SPEED = 0.5
 JBT.SPEED_THAT_DOESNT_DO_THE_IDLE_THING = 25
@@ -29,7 +28,7 @@ function JBT.PlyNeedsDelta(ply)
 		val = ply:GetNWInt("JBT_BigDelta", 1)
 	end
 
-	return val > 1 or (enable:GetBool() and val > 0)
+	return val > 1 or (JBT.GetSettingBool("bigdelta") and val > 0)
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/shared/base_playeranimstate.cpp#L569-L581
@@ -212,7 +211,7 @@ if JBT_LOADED then gmDetour() end
 if CLIENT then return end
 
 timer.Create("JBT_UpdateBigDeltaPrefs", 5, 0, function()
-	if not enable:GetBool() then return end
+	if not JBT.GetSettingBool("bigdelta") then return end
 
 	for _, ply in player.Iterator() do
 		local set = ply:GetInfoNum("jbt_cl_bigdelta", 1)
