@@ -1,12 +1,6 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local enable = CreateConVar("jbt_biguse_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big use module", 0, 1)
-local adminOnly = CreateConVar("jbt_biguse_adminonly", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big usage is for admins only", 0, 1)
-local enableMass = CreateConVar("jbt_biguse_mass", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether big players can carry heavier props", 0, 1)
-local powerMass = CreateConVar("jbt_biguse_mass_pow", "2", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "The mathematical power of the amount of mass big players can carry", 1, 3)
-local smallMode = CreateConVar("jbt_biguse_small", "0", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether smaller players get a smaller range / mass limit for pickup", 0, 1)
-
 JBT.USABLE_ENUMS = 0x00000010 + 0x00000020 + 0x00000040 + 0x00000080
 JBT.DEFAULT_MAX_MASS = 35
 JBT.USE_TANGENTS = { 0, 1, 0.57735026919, 0.3639702342, 0.267949192431, 0.1763269807, -0.1763269807, -0.267949192431 }
@@ -28,7 +22,7 @@ function JBT.IsUsable(ent, required, scale, ply)
 	if bit.band(caps, JBT.USABLE_ENUMS) ~= 0 then return true end
 
 	if not IsValid(ply) then return false end
-	if not JBT.HasEnabled(ply, enableMass, "JBT_BigUse_Mass") then return false end
+	if not JBT.GetPersonalSetting(ply, "biguse_mass") then return false end
 	if ent:IsPlayer() then return false end
 	if ent:HasSpawnFlags(SF_PHYSPROP_PREVENT_PICKUP) then return false end
 
@@ -36,17 +30,16 @@ function JBT.IsUsable(ent, required, scale, ply)
 	if not IsValid(phys) or not phys:IsMoveable() then return false end
 
 	scale = scale or 1
-	return phys:GetMass() <= JBT.DEFAULT_MAX_MASS * scale ^ powerMass:GetInt() -- any physical thing with the right size can be moved
+	return phys:GetMass() <= JBT.DEFAULT_MAX_MASS * scale ^ JBT.GetSetting("biguse_mass_pow") -- any physical thing with the right size can be moved
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseplayer_shared.cpp#L1068-L1270
 hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
-	if not JBT.HasEnabled(ply, enable, "JBT_BigUse") then return end
-	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_biguse", "JBT_BigUse") then return end
+	if not JBT.GetPersonalSetting(ply, "biguse") then return end
 
 	local scale = JBT.PlyScale(ply)
 	if scale < JBT.UPPER then
-		if not smallMode:GetBool() then return end
+		if not JBT.GetPersonalSetting(ply, "biguse_small") then return end
 		if scale > JBT.LOWER then return end
 	end
 
@@ -149,9 +142,8 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 end)
 
 hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
-	if not JBT.HasEnabled(ply, enable, "JBT_BigUse") then return end
-	if not JBT.HasEnabled(ply, enableMass, "JBT_BigUse_Mass") then return end
-	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_biguse", "JBT_BigUse") then return end
+	if not JBT.GetPersonalSetting(ply, "biguse") then return end
+	if not JBT.GetPersonalSetting(ply, "biguse_mass") then return end
 
 	local scale = JBT.PlyScale(ply)
 	if scale < JBT.UPPER then return end
@@ -172,7 +164,7 @@ hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
 
 		local mass = phys:GetMass()
 		if mass <= JBT.DEFAULT_MAX_MASS then return end -- just let the default behavior run
-		if mass > JBT.DEFAULT_MAX_MASS * scale ^ powerMass:GetInt() then return end
+		if mass > JBT.DEFAULT_MAX_MASS * scale ^ JBT.GetSetting("biguse_mass_pow") then return end
 
 		ent.JBT_OldMass = mass
 		phys:SetMass(8)
@@ -219,15 +211,14 @@ hook.Add("OnPlayerPhysicsDrop", "JBT_BigUse", function(ply, ent)
 end)
 
 hook.Add("AllowPlayerPickup", "JBT_BigUse", function(ply, ent)
-	if not JBT.HasEnabled(ply, enable, "JBT_BigUse") then return end
-	if not JBT.HasEnabled(ply, enableMass, "JBT_BigUse_Mass") then return end
-	if not JBT.HasEnabled(ply, smallMode, "JBT_BigUse_Small") then return end
-	if not JBT.AdminOnlyCheck(ply, adminOnly, "jbt_biguse", "JBT_BigUse") then return end
+	if not JBT.GetPersonalSetting(ply, "biguse") then return end
+	if not JBT.GetPersonalSetting(ply, "biguse_mass") then return end
+	if not JBT.GetPersonalSetting(ply, "biguse_small") then return end
 
 	local scale = JBT.PlyScale(ply)
 	if scale > JBT.LOWER then return end
 
 	local phys = ent:GetPhysicsObject()
 	if not IsValid(phys) then return end
-	if phys:GetMass() > JBT.DEFAULT_MAX_MASS * scale ^ powerMass:GetInt() then return false end
+	if phys:GetMass() > JBT.DEFAULT_MAX_MASS * scale ^ JBT.GetSetting("biguse_mass_pow") then return false end
 end)

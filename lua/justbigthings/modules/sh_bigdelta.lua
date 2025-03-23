@@ -5,7 +5,6 @@ local personalEnable
 if CLIENT then
 	personalEnable = CreateClientConVar("jbt_cl_bigdelta", "1", true, true, "Whether your movement animations sync properly with scale (per-player)", 0, 2)
 end
-local enable = CreateConVar("jbt_bigdelta_enabled", "1", FCVAR_NOTIFY + FCVAR_REPLICATED + FCVAR_SERVER_CAN_EXECUTE, "Whether to enable the big delta module", 0, 1)
 
 JBT.MINIMUM_MOVING_SPEED = 0.5
 JBT.SPEED_THAT_DOESNT_DO_THE_IDLE_THING = 25
@@ -26,10 +25,10 @@ function JBT.PlyNeedsDelta(ply)
 	if CLIENT and ply == LocalPlayer() then
 		val = personalEnable:GetInt()
 	else
-		val = ply:GetNWInt("JBT_BigDelta", 1)
+		val = ply:GetNWInt("jbt_bigdelta", 1)
 	end
 
-	return val > 1 or (enable:GetBool() and val > 0)
+	return val > 1 or (JBT.GetSettingBool("bigdelta") and val > 0)
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/shared/base_playeranimstate.cpp#L569-L581
@@ -146,6 +145,8 @@ local function gmDetour()
 	-- but gmod's 'inheritance' actually copies the base stuff to the current
 	-- so that would be useless
 
+	-- we are doing this to mimic a "low priority" ie. the hook can override this with no fuss
+
 	gm.JBT_PlayerStepSoundTime = gm.JBT_PlayerStepSoundTime or gm.PlayerStepSoundTime or function() end
 	function gm:PlayerStepSoundTime(ply, stepType, walking)
 		if not JBT.PlyNeedsDelta(ply) then
@@ -178,45 +179,8 @@ local function gmDetour()
 			stepTime = stepTime + 50
 		end
 
-		--[[
-		if scale <= JBT.LOWER then
-			return stepTime * (0.33 + scale * 0.66)
-		end
-		--]]
-
 		return stepTime
 	end
-
-	--[[ changing anim rate was not as good of an idea as i thought
-	gm.JBT_UpdateAnimation = gm.JBT_UpdateAnimation or gm.UpdateAnimation or function() end
-	function gm:UpdateAnimation(ply, vel, maxSeqGroundSpeed)
-		self:JBT_UpdateAnimation(ply, vel, maxSeqGroundSpeed)
-
-		if not JBT.PlyNeedsDelta(ply) then return end
-
-		local scale = JBT.PlyScale(ply)
-		if scale > JBT.LOWER then return end
-
-		local len = vel:Length()
-		local movement = 1.0
-
-		if len > 0.2 then
-			movement = len / maxSeqGroundSpeed
-		end
-
-		local rate = math.min(movement, 2)
-
-		if ply:WaterLevel() >= 2 then
-			rate = math.max(rate, 0.5)
-		elseif not ply:IsOnGround() and len >= 1000 then
-			rate = 0.1
-		else
-			rate = rate / (0.33 + scale * 0.66)
-		end
-
-		ply:SetPlaybackRate(rate)
-	end
-	--]]
 
 	gm.JBT_CalcMainActivity = gm.JBT_CalcMainActivity or gm.CalcMainActivity or function() end
 	function gm:CalcMainActivity(ply, vel)
@@ -247,10 +211,10 @@ if JBT_LOADED then gmDetour() end
 if CLIENT then return end
 
 timer.Create("JBT_UpdateBigDeltaPrefs", 5, 0, function()
-	if not enable:GetBool() then return end
+	if not JBT.GetSettingBool("bigdelta") then return end
 
 	for _, ply in player.Iterator() do
 		local set = ply:GetInfoNum("jbt_cl_bigdelta", 1)
-		ply:SetNWInt("JBT_BigDelta", set)
+		ply:SetNWInt("jbt_bigdelta", set)
 	end
 end)
