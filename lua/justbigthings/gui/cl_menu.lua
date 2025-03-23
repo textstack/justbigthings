@@ -34,7 +34,7 @@ local function clientSettings(panel)
 	panel:ControlHelp("Whether your sitting eyesight is adjusted based on scale.")
 
 	addLocalBool(panel, "jbt_cl_bigdelta", "BigDelta")
-	panel:ControlHelp("Whether your character animations are adjusted based on scale.")
+	panel:ControlHelp("Whether your movement animations are adjusted based on scale.")
 
 	for _, func in ipairs(clientUpdateCallbacks) do
 		func()
@@ -69,25 +69,26 @@ local function addAdminableBool(panel, setting, extras)
 end
 
 local function addNumWang(panel, setting, extras)
-	holder = panel:Add("Panel")
+	local holder = panel:Add("Panel")
 	holder:Dock(TOP)
 	holder:DockMargin(0, 4, 0, 0)
 	holder:SetTall(16)
 
-	numWang = holder:Add("DNumberWang")
+	local numWang = holder:Add("DNumberWang")
 	numWang:Dock(LEFT)
 	numWang:SetWide(32)
 	numWang:DockMargin(0, 0, 4, 0)
 	numWang:HideWang()
 
-	if extras.Min then
-		numWang:SetMin(extras.Min)
+	local min, max = extras.Min, extras.Max
+	if min then
+		numWang:SetMin(min)
 	end
-	if extras.Max then
-		numWang:SetMax(extras.Max)
+	if max then
+		numWang:SetMax(max)
 	end
 
-	label = holder:Add("DLabel")
+	local label = holder:Add("DLabel")
 	label:Dock(FILL)
 	label:SetTextColor(color_black)
 
@@ -99,18 +100,18 @@ local function addNumWang(panel, setting, extras)
 
 	function numWang:OnValueChanged(val)
 		local newVal = math.floor(val)
-		if extras.Min then
-			newVal = math.max(newVal, extras.Min)
+		if min then
+			newVal = math.max(newVal, min)
 		end
-		if extras.Max then
-			newVal = math.min(newVal, extras.Max)
+		if max then
+			newVal = math.min(newVal, max)
 		end
 
 		JBT.SetSetting(setting, newVal)
 	end
 
 	table.insert(updateCallbacks, function()
-		if not IsValid(holder) then return end
+		if not IsValid(numWang) then return end
 		numWang:SetText(JBT.GetSetting(setting))
 	end)
 end
@@ -156,6 +157,8 @@ local function serverSettings(panel)
 	end
 
 	for _, category in ipairs(JBT.SettingCategories) do
+		if category.ShouldShowFunc and not category.ShouldShowFunc() then continue end
+
 		local section = vgui.Create("DPanel")
 		panel:AddItem(section)
 		section:DockPadding(4, 4, 4, 4)
@@ -172,6 +175,8 @@ local function serverSettings(panel)
 			desc:Dock(TOP)
 			desc:SetText(category.Desc)
 			desc:SetTextColor(gray)
+			desc:SetWrap(true)
+			desc:SetAutoStretchVertical(true)
 			desc:SizeToContentsY()
 		end
 
@@ -193,7 +198,6 @@ local function serverSettings(panel)
 		end
 
 		section:InvalidateLayout(true)
-		section:SizeToChildren(false, true)
 	end
 
 	for _, func in ipairs(updateCallbacks) do

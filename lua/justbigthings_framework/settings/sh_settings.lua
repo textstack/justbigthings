@@ -25,6 +25,9 @@ end
 function JBT.GetPersonalSetting(ply, setting)
 	local nwVar = ply:GetNWBool("jbt_" .. setting, -1)
 	if nwVar == false then return false end
+	if nwVar == -1 then
+		nwVar = false
+	end
 
 	if JBT.GetSettingBool(setting .. "_adminonly") and not JBT.HasPermission(ply, "jbt_" .. setting) then return false end
 
