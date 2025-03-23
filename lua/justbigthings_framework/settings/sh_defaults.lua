@@ -81,6 +81,8 @@ function JBT.SetSettingDefault(setting, value, desc, changeCallback, notPersonal
 end
 
 local function setAllSpeeds()
+	if CLIENT then return end
+
 	timer.Create("JBT_SetAllSpeeds", 1, 1, function()
 		for _, ply in player.Iterator() do
 			JBT.PlyResyncStat(ply, "Speed")
@@ -89,6 +91,8 @@ local function setAllSpeeds()
 end
 
 local function setAllArmor()
+	if CLIENT then return end
+
 	timer.Create("JBT_SetAllArmor", 1, 1, function()
 		for _, ply in player.Iterator() do
 			JBT.PlyRefracStat(ply, "Armor")
@@ -97,6 +101,8 @@ local function setAllArmor()
 end
 
 local function setAllHealth()
+	if CLIENT then return end
+
 	timer.Create("JBT_SetAllHealth", 1, 1, function()
 		for _, ply in player.Iterator() do
 			JBT.PlyRefracStat(ply, "Health")
@@ -105,17 +111,29 @@ local function setAllHealth()
 end
 
 local function setAllStats()
+	if CLIENT then return end
+
 	setAllSpeeds()
 	setAllArmor()
 	setAllHealth()
 end
 
 local function setAllMass()
+	if CLIENT then return end
+
 	timer.Create("JBT_SetAllMass", 1, 1, function()
 		for _, ply in player.Iterator() do
 			JBT.PlyResyncMass(ply)
 		end
 	end)
+end
+
+local function bigDrawReset()
+	if not JBT.ResetBigDraw then return end
+
+	for _, ply in player.Iterator() do
+		JBT.ResetBigDraw(ply)
+	end
 end
 
 -- THESE ARE THE EPIC DEFAULTS
@@ -154,6 +172,9 @@ JBT.SetSettingDefault("sitanywhere_bigtrace_distance", 100, "Base sit distance",
 JBT.SettingCategory("PAC3 BigLimit", "Whether PAC3's size limits should be extended.", function() return pac end)
 JBT.SetSettingDefault("pac_biglimit", true, "Enable module")
 JBT.SetSettingDefault("pac_biglimit_adminonly", true, nil, nil, true)
+
+JBT.SettingCategory("PAC3 BigDraw", "Whether PAC3's draw distance setting should be scaled for each player.", function() return pac end)
+JBT.SetSettingDefault("pac_bigdraw", true, "Enable by default", bigDrawReset, true)
 
 JBT.SettingCategory()
 

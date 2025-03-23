@@ -36,6 +36,11 @@ local function clientSettings(panel)
 	addLocalBool(panel, "jbt_cl_bigdelta", "BigDelta")
 	panel:ControlHelp("Whether your movement animations are adjusted based on scale.")
 
+	if pac then
+		addLocalBool(panel, "jbt_cl_pac_bigdraw", "PAC3 BigDraw")
+		panel:ControlHelp("Whether your PAC3 draw distance setting should be scaled for each player.")
+	end
+
 	for _, func in ipairs(clientUpdateCallbacks) do
 		func()
 	end

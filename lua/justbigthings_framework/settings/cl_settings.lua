@@ -22,6 +22,12 @@ net.Receive(JBT.SETTINGS_NET_STRING, function()
 		local setting = net.ReadString()
 		local value = net.ReadInt(JBT.SETTINGS_OPTION_NET_SIZE)
 
+		local extras = JBT.DefaultSettingsExtras[setting]
+		local oldVal = JBT.Settings[setting]
+		if extras and extras.CC and value ~= oldVal then
+			extras.CC(oldVal, value)
+		end
+
 		JBT.Settings[setting] = value
 	end
 end)
