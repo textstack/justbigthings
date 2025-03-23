@@ -4,17 +4,10 @@ JBT.SETTINGS_NET_STRING = "jbtSettings"
 
 -- allow superadmins to set server settings from client
 function JBT.SetSetting(setting, value)
-	if not LocalPlayer():IsSuperAdmin() then
-		return true
-	end
+	if not LocalPlayer():IsSuperAdmin() then return true end
 
-	local newVal
-	if type(value) == "boolean" then
-		newVal = value and 1 or 0
-	else
-		newVal = tonumber(value)
-		if not newVal then return end
-	end
+	local newVal = JBT.ToSetting(value)
+	if newVal == nil then return end
 
 	net.Start(JBT.SETTINGS_NET_STRING)
 	net.WriteString(setting)

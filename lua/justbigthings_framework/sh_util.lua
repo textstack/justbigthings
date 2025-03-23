@@ -21,9 +21,7 @@ function JBT.PlyScale(ply)
 end
 
 function JBT.HasPermission(ply, permission)
-	if ply.HasPermission and ply:HasPermission(permission) then
-		return true
-	end
+	if CAMI and CAMI.PlayerHasAccess(ply, permission) then return true end
 
 	if JBT.GetSettingBool("admin_is_superadmin") then
 		if ply:IsSuperAdmin() then return true end

@@ -15,5 +15,3 @@ end
 
 hook.Add("PostGamemodeLoaded", "JBT_BigMass", gmDetour)
 if JBT_LOADED then gmDetour() end
-
-JBT.SetSettingDefault("bigmass", false)

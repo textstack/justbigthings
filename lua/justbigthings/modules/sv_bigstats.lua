@@ -195,33 +195,3 @@ hook.Add("JBT_ScaleChanged", "JBT_BigStats", function(ply, scale)
 
 	JBT.PlyResyncAllStats(ply)
 end)
-
-local function setAllSpeeds()
-	for _, ply in player.Iterator() do
-		JBT.PlyResyncStat(ply, "Speed")
-	end
-end
-
-local function setAllArmor()
-	for _, ply in player.Iterator() do
-		JBT.PlyRefracStat(ply, "Armor")
-	end
-end
-
-local function setAllHealth()
-	for _, ply in player.Iterator() do
-		JBT.PlyRefracStat(ply, "Health")
-	end
-end
-
-local function setAll()
-	setAllSpeeds()
-	setAllArmor()
-	setAllHealth()
-end
-
-JBT.SetSettingDefault("bigstats", false, setAll)
-JBT.SetSettingDefault("bigstats_health", true, setAllHealth)
-JBT.SetSettingDefault("bigstats_armor", false, setAllArmor)
-JBT.SetSettingDefault("bigstats_speed", false, setAllSpeeds)
-JBT.SetSettingDefault("bigstats_small", false, setAll)

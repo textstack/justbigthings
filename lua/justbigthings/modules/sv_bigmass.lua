@@ -1,8 +1,6 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local power = CreateConVar("jbt_bigmass_pow", "2", JBT.SERVER_FCVARS, "The mathematical power for how player mass scales with size", 1, 3)
-
 JBT.FEET_MIN_PITCH = 45
 JBT.FEET_MAX_SNDLEVEL = 100
 JBT.FEET_BIG = 3
@@ -95,7 +93,7 @@ function JBT.PlyMass(ply, phys)
 	local scale = JBT.PlyScale(ply)
 	if scale < JBT.UPPER and scale > JBT.LOWER then return default end
 
-	return math.Round(default * scale ^ power:GetInt(), 2)
+	return math.Round(default * scale ^ JBT.GetSetting("bigmass_pow"), 2)
 end
 
 -- get original mass value
@@ -284,13 +282,3 @@ end
 
 hook.Add("PostGamemodeLoaded", "JBT_BigMass", gmDetour)
 if JBT_LOADED then gmDetour() end
-
-local function setEveryone()
-	for _, ply in player.Iterator() do
-		JBT.PlyResyncMass(ply)
-	end
-end
-
-cvars.AddChangeCallback("jbt_bigmass_pow", setEveryone)
-
-JBT.SetSettingDefault("bigmass", false, setEveryone)

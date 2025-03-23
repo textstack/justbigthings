@@ -64,6 +64,3 @@ timer.Create("JBT_Pac3", 1, 60, function()
 		timer.Remove("JBT_Pac3")
 	end
 end)
-
-JBT.SetSettingDefault("pac_biglimit", true)
-JBT.SetSettingDefault("pac_biglimit_adminonly", true)

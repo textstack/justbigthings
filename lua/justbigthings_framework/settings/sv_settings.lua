@@ -1,5 +1,3 @@
-JBT.DefaultSettingsCC = JBT.DefaultSettingsCC or {}
-
 JBT.SETTINGS_FILE = "jbt_settings.json"
 JBT.SETTINGS_NET_STRING = "jbtSettings"
 
@@ -19,11 +17,21 @@ function JBT.SetSetting(setting, value)
 	local newVal = JBT.ToSetting(value)
 	if newVal == nil then return end
 
-	local oldVal = JBT.Settings[setting]
-	if oldVal ~= newVal then
-		local callback = JBT.DefaultSettingsCC[setting]
-		if callback then
-			callback(oldVal, newVal)
+	local extras = JBT.DefaultSettingsExtras[setting]
+	if extras then
+		if extras.IsBool then
+			newVal = math.Clamp(newVal, 0, 1)
+		end
+		if extras.Min then
+			newVal = math.max(newVal, extras.Min)
+		end
+		if extras.Max then
+			newVal = math.min(newVal, extras.Max)
+		end
+
+		local oldVal = JBT.Settings[setting]
+		if extras.CC and oldVal ~= newVal then
+			extras.CC(oldVal, newVal)
 		end
 	end
 
@@ -47,12 +55,17 @@ concommand.Add("jbt_set_setting", function(ply, _, args)
 		return
 	end
 
+	if args[2] == "" then
+		args[2] = nil
+	end
+
 	JBT.SetSetting(args[1], args[2])
+	print("[JBT] Set %s to %s", args[1], args[2])
 end, nil, nil, FCVAR_PROTECTED)
 
 local function sendAll()
 	net.Start(JBT.SETTINGS_NET_STRING)
-	net.WriteUInt(table.Count(Warden.Settings), JBT.SETTINGS_NET_SIZE)
+	net.WriteUInt(table.Count(JBT.Settings), JBT.SETTINGS_NET_SIZE)
 	for k, v in pairs(JBT.Settings) do
 		net.WriteString(k)
 		net.WriteInt(v, JBT.SETTINGS_OPTION_NET_SIZE)
@@ -81,7 +94,7 @@ net.Receive(JBT.SETTINGS_NET_STRING, function(_, ply)
 	end
 
 	local setting = net.ReadString()
-	local value = net.ReadInt(JBT.SETTINGS_OPTION_NET_SIZ)
+	local value = net.ReadInt(JBT.SETTINGS_OPTION_NET_SIZE)
 
 	JBT.SetSetting(setting, value)
 end)

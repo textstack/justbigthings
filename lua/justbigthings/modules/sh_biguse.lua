@@ -1,8 +1,6 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local powerMass = CreateConVar("jbt_biguse_mass_pow", "2", JBT.SHARED_FCVARS, "The mathematical power of the amount of mass big players can carry", 1, 3)
-
 JBT.USABLE_ENUMS = 0x00000010 + 0x00000020 + 0x00000040 + 0x00000080
 JBT.DEFAULT_MAX_MASS = 35
 JBT.USE_TANGENTS = { 0, 1, 0.57735026919, 0.3639702342, 0.267949192431, 0.1763269807, -0.1763269807, -0.267949192431 }
@@ -32,7 +30,7 @@ function JBT.IsUsable(ent, required, scale, ply)
 	if not IsValid(phys) or not phys:IsMoveable() then return false end
 
 	scale = scale or 1
-	return phys:GetMass() <= JBT.DEFAULT_MAX_MASS * scale ^ powerMass:GetInt() -- any physical thing with the right size can be moved
+	return phys:GetMass() <= JBT.DEFAULT_MAX_MASS * scale ^ JBT.GetSetting("biguse_mass_pow") -- any physical thing with the right size can be moved
 end
 
 -- https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/shared/baseplayer_shared.cpp#L1068-L1270
@@ -41,7 +39,7 @@ hook.Add("FindUseEntity", "JBT_BigUse", function(ply, defaultEnt)
 
 	local scale = JBT.PlyScale(ply)
 	if scale < JBT.UPPER then
-		if not JBT.GetSettingBool("biguse_small") then return end
+		if not JBT.GetPersonalSetting(ply, "biguse_small") then return end
 		if scale > JBT.LOWER then return end
 	end
 
@@ -166,7 +164,7 @@ hook.Add("PlayerUse", "JBT_BigUse", function(ply, ent)
 
 		local mass = phys:GetMass()
 		if mass <= JBT.DEFAULT_MAX_MASS then return end -- just let the default behavior run
-		if mass > JBT.DEFAULT_MAX_MASS * scale ^ powerMass:GetInt() then return end
+		if mass > JBT.DEFAULT_MAX_MASS * scale ^ JBT.GetSetting("biguse_mass_pow") then return end
 
 		ent.JBT_OldMass = mass
 		phys:SetMass(8)
@@ -222,9 +220,5 @@ hook.Add("AllowPlayerPickup", "JBT_BigUse", function(ply, ent)
 
 	local phys = ent:GetPhysicsObject()
 	if not IsValid(phys) then return end
-	if phys:GetMass() > JBT.DEFAULT_MAX_MASS * scale ^ powerMass:GetInt() then return false end
+	if phys:GetMass() > JBT.DEFAULT_MAX_MASS * scale ^ JBT.GetSetting("biguse_mass_pow") then return false end
 end)
-
-JBT.SetSettingDefault("biguse", true)
-JBT.SetSettingDefault("biguse_mass", true)
-JBT.SetSettingDefault("biguse_small", false)

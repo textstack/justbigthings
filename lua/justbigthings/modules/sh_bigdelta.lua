@@ -25,7 +25,7 @@ function JBT.PlyNeedsDelta(ply)
 	if CLIENT and ply == LocalPlayer() then
 		val = personalEnable:GetInt()
 	else
-		val = ply:GetNWInt("JBT_BigDelta", 1)
+		val = ply:GetNWInt("jbt_bigdelta", 1)
 	end
 
 	return val > 1 or (JBT.GetSettingBool("bigdelta") and val > 0)
@@ -215,6 +215,6 @@ timer.Create("JBT_UpdateBigDeltaPrefs", 5, 0, function()
 
 	for _, ply in player.Iterator() do
 		local set = ply:GetInfoNum("jbt_cl_bigdelta", 1)
-		ply:SetNWInt("JBT_BigDelta", set)
+		ply:SetNWInt("jbt_bigdelta", set)
 	end
 end)

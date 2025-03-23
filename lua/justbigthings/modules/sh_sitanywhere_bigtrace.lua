@@ -1,8 +1,6 @@
 JBT = JBT or {}
 local JBT = JBT
 
-local distance = CreateConVar("jbt_sitanywhere_bigtrace_distance", "100", JBT.SHARED_FCVARS, "What the base distance check should be for sitting", 0, 9999)
-
 local function bigTrace()
 	if not SitAnywhere then return end
 
@@ -23,7 +21,7 @@ local function bigTrace()
 		end
 
 		if not EyeTrace.Hit then return false end
-		if EyeTrace.HitPos:Distance(EyeTrace.StartPos) > distance:GetFloat() * scale then return false end
+		if EyeTrace.HitPos:Distance(EyeTrace.StartPos) > JBT.GetSetting("sitanywhere_bigtrace_distance") * scale then return false end
 
 		local t = hook.Run("CheckValidSit", ply, EyeTrace)
 		if t == false or t == true then return t end
@@ -63,6 +61,3 @@ timer.Create("JBT_SitAnywhere", 1, 60, function()
 		timer.Remove("JBT_SitAnywhere")
 	end
 end)
-
-JBT.SetSettingDefault("sitanywhere_bigtrace", true)
-JBT.SetSettingDefault("sitanywhere_bigtrace_small", false)

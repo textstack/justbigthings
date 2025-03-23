@@ -44,9 +44,8 @@ includeDir = function(directory)
 	end
 end
 
-includeDir("justbigthings/util")
-includeDir("justbigthings/base")
-includeDir("justbigthings/intercompat")
+includeDir("justbigthings_framework")
+includeDir("justbigthings")
 --includeDir("justbigthings/gamemodes/" .. engine.ActiveGamemode())
 
 JBT_LOADED = true
