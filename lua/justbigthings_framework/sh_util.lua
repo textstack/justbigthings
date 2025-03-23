@@ -20,8 +20,18 @@ function JBT.PlyScale(ply)
 	return zFrac * math.min(xyFrac / zFrac, 1)
 end
 
+-- in the interest of not wanting to rewrite everything to be async
+-- this makes every jbt permission off by one if the PlayerHasAccess func has ANY delay
+local evilCache = {}
+
 function JBT.HasPermission(ply, permission)
-	if CAMI and CAMI.PlayerHasAccess(ply, permission) then return true end
+	if CAMI then
+		CAMI.PlayerHasAccess(ply, permission, function(hasAccess)
+			evilCache[ply:SteamID()] = hasAccess
+		end)
+
+		if evilCache[ply:SteamID()] then return true end
+	end
 
 	if JBT.GetSettingBool("admin_is_superadmin") then
 		if ply:IsSuperAdmin() then return true end
