@@ -164,7 +164,7 @@ JBT.SetSettingDefault("bigdelta", true, "Enable by default", nil, true)
 JBT.SettingCategory("BigSit", "Whether player scale affects sitting eyeheight.")
 JBT.SetSettingDefault("bigsit", true, "Enable by default", nil, true)
 
-JBT.SettingCategory("Sit Anywhere BigTrace", "Whether player scale affects SitAnywhere sitting.", function() return SitAnywhere end)
+JBT.SettingCategory("Sit Anywhere BigTrace", "Whether player scale affects Sit Anywhere's sitting.", function() return SitAnywhere end)
 JBT.SetSettingDefault("sitanywhere_bigtrace", true, "Enable module")
 JBT.SetSettingDefault("sitanywhere_bigtrace_small", false, "Affect smaller players")
 JBT.SetSettingDefault("sitanywhere_bigtrace_distance", 100, "Base sit distance", nil, 0, 1000)
