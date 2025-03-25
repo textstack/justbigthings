@@ -60,9 +60,10 @@ local function drawDist()
 		end
 	end)
 
-	gameevent.Listen("player_activate")
-	hook.Add("player_activate", "JBT_PAC3_BigDraw", function(data)
-		JBT.ResetBigDraw(Player(data.userid))
+	hook.Add("NetworkEntityCreated", "JBT_PAC3_BigDraw", function(ent)
+		if ent:IsPlayer() then
+			JBT.ResetBigDraw(ent)
+		end
 	end)
 
 	hook.Add("JBT_ScaleChanged", "JBT_PAC3_BigDraw", function(ply, scale)
