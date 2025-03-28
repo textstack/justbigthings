@@ -26,6 +26,9 @@ local evilCache = {}
 
 function JBT.HasPermission(ply, permission)
 	if CAMI then
+		-- avoid weird ulib error
+		if ULib and not ULib.ucl.authed[ply:UniqueID()] then return false end
+
 		CAMI.PlayerHasAccess(ply, permission, function(hasAccess)
 			evilCache[ply:SteamID()] = hasAccess
 		end)
