@@ -5,7 +5,6 @@ JBT.FEET_MIN_PITCH = 45
 JBT.FEET_MAX_SNDLEVEL = 100
 JBT.FEET_BIG = 3
 JBT.FEET_HUGE = 8
-JBT.FEET_NO_OVERRIDE = { "ladder", "wade", "slosh" }
 JBT.FOOTSTEP_SOUNDS = {
 	{
 		mat = { "glass" },
