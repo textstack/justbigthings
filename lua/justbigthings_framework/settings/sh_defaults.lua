@@ -2,10 +2,6 @@ JBT.DefaultSettings = JBT.DefaultSettings or {}
 JBT.DefaultSettingsExtras = JBT.DefaultSettingsExtras or {}
 JBT.SettingCategories = {} -- can stack on reload
 
--- for bigmass
--- bad place for this but it needs to be shared
-JBT.FEET_NO_OVERRIDE = { "ladder", "wade", "slosh" }
-
 local curCategory
 
 -- set the current setting category for your file, for setting menu organization
