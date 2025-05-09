@@ -1,0 +1,17 @@
+{
+    "title" : "JustBigThings (tweaks for big/small players)",
+    "type" : "tool",
+    "tags" : [ "realism", "fun" ],
+    "ignore": [
+        ".git/*",
+        ".github/*",
+        ".vscode/*",
+        "branding/*",
+        "*.md",
+        ".gitignore",
+        ".gitattributes",
+        ".gitmodules",
+        "node_modules",
+        "LICENSE"
+    ]
+}
