@@ -141,7 +141,7 @@ end
 JBT.SettingCategory("General Settings")
 JBT.SetSettingDefault("admin_is_superadmin", false, "Admin only is superadmin only", nil, true)
 
-JBT.SettingCategory("BigUse", "Whether player scale affects +use interaction.")
+JBT.SettingCategory("BigUse", "Whether player scale affects +use interactions.")
 JBT.SetSettingDefault("biguse", true, "Enable module")
 JBT.SetSettingDefault("biguse_small", false, "Affect smaller players")
 JBT.SetSettingDefault("biguse_mass", true, "Affect max carry weight")
