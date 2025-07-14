@@ -4,7 +4,6 @@ local JBT = JBT
 JBT.STAT_ROUND = 5
 JBT.DEFAULT_STAT_VALUE = 100
 JBT.SPEED_STATS = {
-	"CrouchedWalkSpeed",
 	"LadderClimbSpeed",
 	"RunSpeed",
 	"SlowWalkSpeed",
