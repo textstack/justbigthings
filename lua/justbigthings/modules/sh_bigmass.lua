@@ -1,3 +1,5 @@
+if GetConvar("jbt_debug_nobigmass"):GetBool() then return end
+
 JBT = JBT or {}
 local JBT = JBT
 

@@ -2,6 +2,9 @@ JBT.DefaultSettings = JBT.DefaultSettings or {}
 JBT.DefaultSettingsExtras = JBT.DefaultSettingsExtras or {}
 JBT.SettingCategories = {} -- can stack on reload
 
+-- temporary measure because a part of bigmass seems to be laggy (?)
+local nobigmassCvar = CreateConVar("jbt_debug_nobigmass", 0, JBT.SHARED_FCVARS, "Prevents the Big Mass module from loading", 0, 1)
+
 local curCategory
 
 -- set the current setting category for your file, for setting menu organization
@@ -154,9 +157,11 @@ JBT.SetSettingDefault("bigstats_health", true, "Affect health", setAllHealth)
 JBT.SetSettingDefault("bigstats_armor", false, "Affect armor", setAllArmor)
 JBT.SetSettingDefault("bigstats_speed", false, "Affect speed", setAllSpeeds)
 
-JBT.SettingCategory("BigMass", "Whether player scale affects mass.")
-JBT.SetSettingDefault("bigmass", false, "Enable module", setAllMass)
-JBT.SetSettingDefault("bigmass_pow", 2, "Mass scaling exponent", setAllMass, 1, 3)
+if not nobigmassCvar:GetBool() then
+	JBT.SettingCategory("BigMass", "Whether player scale affects mass.")
+	JBT.SetSettingDefault("bigmass", false, "Enable module", setAllMass)
+	JBT.SetSettingDefault("bigmass_pow", 2, "Mass scaling exponent", setAllMass, 1, 3)
+end
 
 JBT.SettingCategory("BigDelta", "Whether player scale affects movement animations.")
 JBT.SetSettingDefault("bigdelta", true, "Enable by default", nil, true)
